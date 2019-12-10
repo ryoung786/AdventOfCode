@@ -11,8 +11,9 @@ class Intcode
     99 => 0
   }
 
-  attr_accessor :program, :instruction_pointer, :input, :output
-  def initialize(program, input, output)
+  attr_accessor :id, :program, :instruction_pointer, :input, :output
+  def initialize(program, input, output, id)
+    @id = id
     @program = program
     @input = input
     @output = output
@@ -43,6 +44,11 @@ class Intcode
       elsif opcode == 2
         @program[@program[@instruction_pointer+3]] = params[0] * params[1]
       elsif opcode == 3
+        while @input.empty?
+          # p "sleeping"
+          sleep 0.01
+        end
+        # p "computer #{@id} input: #{@input}"
         @program[@program[@instruction_pointer+1]] = @input.shift
       elsif opcode == 4
         all_outputs << params[0]
@@ -56,7 +62,6 @@ class Intcode
       elsif opcode == 8 # equals
         @program[@program[@instruction_pointer+3]] = params[0] == params[1] ? 1 : 0
       elsif opcode == 99
-        p "all_outputs: #{all_outputs}"
         return
       end
       @instruction_pointer += params.length + 1
