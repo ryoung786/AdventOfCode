@@ -11,56 +11,51 @@ class Intcode
     99 => 0
   }
 
-  attr_accessor :id, :program, :instruction_pointer, :input, :output
+  attr_accessor :id, :input, :output
   def initialize(program, input, output, id)
     @id = id
     @program = program
     @input = input
     @output = output
     @instruction_pointer = 0
+    @relative_base = 0
   end
 
   def get_params()
-    opcode = @program[@instruction_pointer]
+    instruction = @program[@instruction_pointer]
     params = []
-    (1..NUM_PARAMS[opcode%100]).each do |i|
-      if ((opcode / (10**(i+1))) % 10 == 1) # immediate mode
-        params << @program[@instruction_pointer+i]
-      else # position mode
-        params << @program[@program[@instruction_pointer+i]]
-      end
+    (1..NUM_PARAMS[instruction%100]).map do |i|
+      mode = (instruction / (10**(i+1))) % 10
+      next @program[@instruction_pointer+i] if mode==0 # position mode
+      next @instruction_pointer+i if mode==1 # immediate mode
+      next @instruction_pointer+i if mode==2 # relative mode
     end
-    params
   end
 
   def run
     all_outputs = []
     loop do
       opcode = @program[@instruction_pointer] % 100
-
       params = get_params()
+
       if opcode == 1
-        @program[@program[@instruction_pointer+3]] = params[0] + params[1]
+        @program[params[2]] = @program[params[0]] + @program[params[1]]
       elsif opcode == 2
-        @program[@program[@instruction_pointer+3]] = params[0] * params[1]
+        @program[params[2]] = @program[params[0]] * @program[params[1]]
       elsif opcode == 3
-        while @input.empty?
-          # p "sleeping"
-          sleep 0.01
-        end
-        # p "computer #{@id} input: #{@input}"
-        @program[@program[@instruction_pointer+1]] = @input.shift
+        sleep 0.01 while @input.empty?
+        @program[params[0]] = @input.shift
       elsif opcode == 4
-        all_outputs << params[0]
-        @output << params[0]
+        all_outputs << @program[params[0]]
+        @output << @program[params[0]]
       elsif opcode == 5 # jump-if-true
-        next (@instruction_pointer = params[1]) if params[0] != 0
+        next (@instruction_pointer = @program[params[1]]) if @program[params[0]] != 0
       elsif opcode == 6 # jump-if-false
-        next (@instruction_pointer = params[1]) if params[0] == 0
+        next (@instruction_pointer = @program[params[1]]) if @program[params[0]] == 0
       elsif opcode == 7 # less than
-        @program[@program[@instruction_pointer+3]] = params[0] < params[1] ? 1 : 0
+        @program[params[2]] = @program[params[0]] < @program[params[1]] ? 1 : 0
       elsif opcode == 8 # equals
-        @program[@program[@instruction_pointer+3]] = params[0] == params[1] ? 1 : 0
+        @program[params[2]] = @program[params[0]] == @program[params[1]] ? 1 : 0
       elsif opcode == 99
         return
       end
