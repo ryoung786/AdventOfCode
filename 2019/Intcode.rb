@@ -1,4 +1,14 @@
 class Intcode
+  class Memory
+    def initialize(program)
+      @memory = program.each_with_index.reduce(Hash.new(0)) do |h,pair|
+        x, i = pair
+        h[i] = x
+        h
+      end
+    end
+  end
+
   NUM_PARAMS = {
     1 => 3,
     2 => 3,
@@ -8,17 +18,19 @@ class Intcode
     6 => 2,
     7 => 3,
     8 => 3,
+    9 => 1,
     99 => 0
   }
 
   attr_accessor :id, :input, :output
   def initialize(program, input, output, id)
     @id = id
-    @program = program
     @input = input
     @output = output
     @instruction_pointer = 0
     @relative_base = 0
+    @program = (0...program.length).zip(program).to_h
+    @program.default = 0
   end
 
   def get_params()
@@ -28,7 +40,7 @@ class Intcode
       mode = (instruction / (10**(i+1))) % 10
       next @program[@instruction_pointer+i] if mode==0 # position mode
       next @instruction_pointer+i if mode==1 # immediate mode
-      next @instruction_pointer+i if mode==2 # relative mode
+      next @relative_base+@program[@instruction_pointer+i] if mode==2 # relative mode
     end
   end
 
@@ -38,14 +50,14 @@ class Intcode
       opcode = @program[@instruction_pointer] % 100
       params = get_params()
 
-      if opcode == 1
+      if opcode == 1 # add
         @program[params[2]] = @program[params[0]] + @program[params[1]]
-      elsif opcode == 2
+      elsif opcode == 2 # multiply
         @program[params[2]] = @program[params[0]] * @program[params[1]]
-      elsif opcode == 3
+      elsif opcode == 3 # input
         sleep 0.01 while @input.empty?
         @program[params[0]] = @input.shift
-      elsif opcode == 4
+      elsif opcode == 4 # output
         all_outputs << @program[params[0]]
         @output << @program[params[0]]
       elsif opcode == 5 # jump-if-true
@@ -56,6 +68,8 @@ class Intcode
         @program[params[2]] = @program[params[0]] < @program[params[1]] ? 1 : 0
       elsif opcode == 8 # equals
         @program[params[2]] = @program[params[0]] == @program[params[1]] ? 1 : 0
+      elsif opcode == 9
+        @relative_base += @program[params[0]]
       elsif opcode == 99
         return
       end
