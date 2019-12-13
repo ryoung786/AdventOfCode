@@ -1,4 +1,3 @@
-lines = File.readlines(File.dirname(__FILE__) + '/input').map(&:strip)
 lines = [
     '.#..#',
     '.....',
@@ -28,6 +27,7 @@ lines = [
     '#.#.#.#####.####.###',
     '###.##.####.##.#..##',
 ]
+lines = File.readlines(File.dirname(__FILE__) + '/input').map(&:strip)
 @map_width = lines[0].length
 @map_height = lines.length
 @m1 = lines.map(&:chars)
@@ -67,10 +67,27 @@ def asteroid_in_line?(a, slope)
     return false
 end
 
-sight = asteroid_locations.map do |a|
-    foo = dydx_pairs.map{|slope| asteroid_in_line?(a, slope) ? 1 : 0}
-    foo.reduce(0){|sum,x| sum + x }
-end
+# sight = asteroid_locations.map do |a|
+#     foo = dydx_pairs.map{|slope| asteroid_in_line?(a, slope) ? 1 : 0}
+#     foo.reduce(0){|sum,x| sum + x }
+# end
 
-p sight
-p sight.max
+foo = asteroid_locations.map do |a|
+    slopes = []
+    asteroid_locations.each do |b|
+        next if a==b
+        dy = b[1]-a[1]
+        dx = b[0]-a[0]
+            
+        if dy == 0
+            slopes << [dx/dx.abs, 0]
+        elsif dx == 0
+            slopes << [0, dy/dy.abs]
+        else
+            foo = dy.gcd(dx)
+            slopes << [dy/foo, dx/foo]
+        end
+    end
+    slopes.uniq.length
+end
+p foo.max
