@@ -1,4 +1,4 @@
-lines = File.readlines(File.dirname(__FILE__) + '/input')
+lines = File.readlines(File.dirname(__FILE__) + '/input').map(&:strip)
 lines = [
     '.#..#',
     '.....',
@@ -6,7 +6,32 @@ lines = [
     '....#',
     '...##'
 ]
-m = lines.map(&:chars)
+lines = [
+    '.#..##.###...#######',
+    '##.############..##.',
+    '.#.######.########.#',
+    '.###.#######.####.#.',
+    '#####.##.#.##.###.##',
+    '..#####..#.#########',
+    '####################',
+    '#.####....###.#.#.##',
+    '##.#################',
+    '#####.##.###..####..',
+    '..######..##.#######',
+    '####.##.####...##..#',
+    '.#####..#.######.###',
+    '##...#.##########...',
+    '#.##########.#######',
+    '.####.#.###.###.#.##',
+    '....##.##.###..#####',
+    '.#.#.###########.###',
+    '#.#.#.#####.####.###',
+    '###.##.####.##.#..##',
+]
+@map_width = lines[0].length
+@map_height = lines.length
+@m1 = lines.map(&:chars)
+@m2 = @m1.map{|row| row.map{|n| n == '#' ? 1 : 0}}.transpose
 
 asteroid_locations = []
 lines.each_with_index do |line, y|
@@ -17,25 +42,35 @@ end
 
 p asteroid_locations
 
-def can_see(a,b)
-    # can we see b from a
-    ax,ay = a
-    bx,by = b
-
-    mx = bx - ax
-    my = by - ay
+dys = (-@map_height+1 ... @map_height).to_a
+dxs = (-@map_width+1 ... @map_width).to_a
+dydx_pairs = dys.product(dxs).map do |p|
+    dy,dx = p
+    next [0,0] if dx.zero? && dy.zero?
+    next [dx/dx.abs,0] if dy.zero?
+    next [0,dy/dy.abs] if dx.zero?
+    foo = dy.gcd(dx)
+    [dy/foo, dx/foo]
 end
+dydx_pairs = dydx_pairs.uniq!.reject{|p| p[0]==0 && p[1]==0}
 
-count = []
-
-asteroid_locations.each do |a|
-    sum = 0
-    asteroid_locations.each do |b|
-        next if a == b
-        sum += 1 if can_see(a,b)
+def asteroid_in_line?(a, slope)
+    return false if slope == 0
+    x,y = a
+    dy,dx = slope
+    loop do
+        x += dx
+        y -= dy
+        return false unless (0...@map_width).include?(x) && (0...@map_height).include?(y)
+        return true if @m2[x][y] == 1
     end
-    count << sum
+    return false
 end
 
-p count
-p count.max
+sight = asteroid_locations.map do |a|
+    foo = dydx_pairs.map{|slope| asteroid_in_line?(a, slope) ? 1 : 0}
+    foo.reduce(0){|sum,x| sum + x }
+end
+
+p sight
+p sight.max
