@@ -1,13 +1,4 @@
 class Intcode
-  class Memory
-    def initialize(program)
-      @memory = program.each_with_index.reduce(Hash.new(0)) do |h,pair|
-        x, i = pair
-        h[i] = x
-        h
-      end
-    end
-  end
 
   NUM_PARAMS = {
     1 => 3,
@@ -22,7 +13,7 @@ class Intcode
     99 => 0
   }
 
-  attr_accessor :id, :input, :output
+  attr_accessor :id, :input, :output, :is_running
   def initialize(program, input, output, id)
     @id = id
     @input = input
@@ -31,6 +22,7 @@ class Intcode
     @relative_base = 0
     @program = (0...program.length).zip(program).to_h
     @program.default = 0
+    @is_running = false
   end
 
   def get_params()
@@ -45,6 +37,7 @@ class Intcode
   end
 
   def run
+    @is_running = true
     all_outputs = []
     loop do
       opcode = @program[@instruction_pointer] % 100
@@ -71,6 +64,7 @@ class Intcode
       elsif opcode == 9
         @relative_base += @program[params[0]]
       elsif opcode == 99
+        @is_running = false
         return
       end
       @instruction_pointer += params.length + 1
