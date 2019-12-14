@@ -1,9 +1,17 @@
+lines = File.readlines(File.dirname(__FILE__) + '/input').map(&:strip)
 lines = [
     '.#..#',
     '.....',
     '#####',
     '....#',
     '...##'
+]
+lines = [
+'.#....#####...#..',
+'##...##.#####..##',
+'##...#...#.#####.',
+'..#.....#...###..',
+'..#.#.....#....##',    
 ]
 lines = [
     '.#..##.###...#######',
@@ -40,38 +48,6 @@ lines.each_with_index do |line, y|
   end
 end
 
-p asteroid_locations
-
-dys = (-@map_height+1 ... @map_height).to_a
-dxs = (-@map_width+1 ... @map_width).to_a
-dydx_pairs = dys.product(dxs).map do |p|
-    dy,dx = p
-    next [0,0] if dx.zero? && dy.zero?
-    next [dx/dx.abs,0] if dy.zero?
-    next [0,dy/dy.abs] if dx.zero?
-    foo = dy.gcd(dx)
-    [dy/foo, dx/foo]
-end
-dydx_pairs = dydx_pairs.uniq!.reject{|p| p[0]==0 && p[1]==0}
-
-def asteroid_in_line?(a, slope)
-    return false if slope == 0
-    x,y = a
-    dy,dx = slope
-    loop do
-        x += dx
-        y -= dy
-        return false unless (0...@map_width).include?(x) && (0...@map_height).include?(y)
-        return true if @m2[x][y] == 1
-    end
-    return false
-end
-
-# sight = asteroid_locations.map do |a|
-#     foo = dydx_pairs.map{|slope| asteroid_in_line?(a, slope) ? 1 : 0}
-#     foo.reduce(0){|sum,x| sum + x }
-# end
-
 foo = asteroid_locations.map do |a|
     slopes = []
     asteroid_locations.each do |b|
@@ -91,3 +67,48 @@ foo = asteroid_locations.map do |a|
     slopes.uniq.length
 end
 p foo.max
+p asteroid_locations[foo.index(foo.max)]
+
+
+# begin part 2
+origin = asteroid_locations[foo.index(foo.max)]
+
+# we're gonna convert each asteroid location
+# to polar coordinates, then store them in a hash
+# where the key is the angle, the val is an
+# array of magnitudes
+
+h = Hash.new{[]}
+asteroid_locations.each do |asteroid|
+    x,y = asteroid
+    a = Complex(x - origin[0], origin[1]-y)
+    next if a.abs == 0
+    h[a.arg] = (h[a.arg] + [a.abs]).sort # arg = theta, abs = r
+end
+
+# now we have to iterate through all our angles
+# but we want to do clockwise starting from PI/2
+# so let's sort and move our index i to PI/2
+
+lasered = []
+i=0
+thetas = h.keys.sort
+i+=1 while thetas[i]<(Math::PI/2)
+
+# debugging stuff
+out = lines
+out[origin[1]][origin[0]] = 'O'
+
+# loop through each angle, pop off the smallest magnitude
+while lasered.length<299 do
+    angle = thetas[i]
+    if !(h[angle].empty?)
+        p lasered.length+1
+        x,y = Complex.polar(h[angle].shift, angle).rect.map(&:round)
+        # out[origin[1]-y][x+origin[0]] = '*'
+        # out.each{|line| p line}
+        lasered << [x+origin[0], origin[1]-y]
+    end
+    i = (i-1)%thetas.length
+end
+p lasered.take(200).last
