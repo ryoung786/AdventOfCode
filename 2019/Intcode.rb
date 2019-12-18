@@ -13,7 +13,7 @@ class Intcode
     99 => 0
   }
 
-  attr_accessor :id, :input, :output, :is_running
+  attr_accessor :id, :input, :output, :is_running, :awaiting_input
   def initialize(program, input, output, id)
     @id = id
     @input = input
@@ -23,6 +23,7 @@ class Intcode
     @program = (0...program.length).zip(program).to_h
     @program.default = 0
     @is_running = false
+    @awaiting_input = false
   end
 
   def get_params()
@@ -48,7 +49,9 @@ class Intcode
       elsif opcode == 2 # multiply
         @program[params[2]] = @program[params[0]] * @program[params[1]]
       elsif opcode == 3 # input
+        @awaiting_input = true
         sleep 0.01 while @input.empty?
+        @awaiting_input = false
         @program[params[0]] = @input.shift
       elsif opcode == 4 # output
         all_outputs << @program[params[0]]
