@@ -1,25 +1,25 @@
-input = %q(10 ORE => 10 A
-    1 ORE => 1 B
-    7 A, 1 B => 1 C
-    7 A, 1 C => 1 D
-    7 A, 1 D => 1 E
-    7 A, 1 E => 1 FUEL)
-input = %q(9 ORE => 2 A
-    8 ORE => 3 B
-    7 ORE => 5 C
-    3 A, 4 B => 1 AB
-    5 B, 7 C => 1 BC
-    4 C, 1 A => 1 CA
-    2 AB, 3 BC, 4 CA => 1 FUEL)
-input = %q(157 ORE => 5 NZVS
-    165 ORE => 6 DCFZ
-    44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
-    12 HKGWZ, 1 GPVTF, 8 PSHF => 9 QDVJ
-    179 ORE => 7 PSHF
-    177 ORE => 5 HKGWZ
-    7 DCFZ, 7 PSHF => 2 XJWVT
-    165 ORE => 2 GPVTF
-    3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT)
+# input = %q(10 ORE => 10 A
+#     1 ORE => 1 B
+#     7 A, 1 B => 1 C
+#     7 A, 1 C => 1 D
+#     7 A, 1 D => 1 E
+#     7 A, 1 E => 1 FUEL)
+# input = %q(9 ORE => 2 A
+#     8 ORE => 3 B
+#     7 ORE => 5 C
+#     3 A, 4 B => 1 AB
+#     5 B, 7 C => 1 BC
+#     4 C, 1 A => 1 CA
+#     2 AB, 3 BC, 4 CA => 1 FUEL)
+# input = %q(157 ORE => 5 NZVS
+#     165 ORE => 6 DCFZ
+#     44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
+#     12 HKGWZ, 1 GPVTF, 8 PSHF => 9 QDVJ
+#     179 ORE => 7 PSHF
+#     177 ORE => 5 HKGWZ
+#     7 DCFZ, 7 PSHF => 2 XJWVT
+#     165 ORE => 2 GPVTF
+#     3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT)
 input = %q(2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG
     17 NVRVD, 3 JNWZP => 8 VPVL
     53 STKFG, 6 MNCFX, 46 VJHF, 81 HVMC, 68 CXFTF, 25 GNMV => 1 FUEL
@@ -82,37 +82,62 @@ end
 
 input = File.read(File.dirname(__FILE__) + '/input')
 
-recipe = {}
+@recipe = {}
 input.split("\n").each do |line|
     formula = Formula.new(line)
-    p "uh oh #{formula.product.name} double" if recipe.has_key?(formula.product.name)
-    recipe[formula.product.name] = formula
+    p "uh oh #{formula.product.name} double" if @recipe.has_key?(formula.product.name)
+    @recipe[formula.product.name] = formula
 end
 
-fuel_formula = recipe['FUEL'].dup
-excess = Hash.new(0)
-ore_count = 0
+def foo(fuel_target)
+    fuel_formula = @recipe['FUEL'].dup
+    excess = Hash.new(0)
+    ore_count = 3100000
+    ore_count = 0
+    fuel_count = 0
 
-queue = fuel_formula.reactants
-while !(queue.empty?) do
-    component = queue.shift
-    if component.is_ore?
-        ore_count += component.amount
-    else
-        if component.amount >= excess[component.name]
-            component.amount -= excess[component.name]
-            excess[component.name] = 0
-        else
-            excess[component.name] -= component.amount
-            component.amount = 0
-            next
+    target_fuel = fuel_target # 10426008580, 1000000
+
+    queue = fuel_formula.reactants.dup
+    queue = queue.map{|c| Component.new(c.name, c.amount*target_fuel)}
+    while true do
+        if queue.empty?
+            queue = fuel_formula.reactants.dup
+            fuel_count += target_fuel
+            # break if fuel_count == 1000000
+            break
         end
-        multiple = (component.amount / recipe[component.name].product.amount.to_f).ceil
-        made = recipe[component.name].product.amount * multiple
-        excess[component.name] += (made - component.amount)
-        queue += recipe[component.name].reactants.map{|c| Component.new(c.name, c.amount*multiple)}
-        # queue = reduce(queue)
+        component = queue.shift
+        if component.is_ore?
+            ore_count += component.amount
+        else
+            if component.amount >= excess[component.name]
+                component.amount -= excess[component.name]
+                excess[component.name] = 0
+            else
+                excess[component.name] -= component.amount
+                component.amount = 0
+                next
+            end
+            multiple = (component.amount / @recipe[component.name].product.amount.to_f).ceil
+            made = @recipe[component.name].product.amount * multiple
+            excess[component.name] += (made - component.amount)
+            # queue += @recipe[component.name].reactants.map{|c| Component.new(c.name, c.amount*multiple)}
+            @recipe[component.name].reactants.each{|c| queue.unshift(Component.new(c.name, c.amount*multiple))}
+        end
     end
+    return [ore_count, fuel_count]
 end
 
-p ore_count
+tril = 1000000000000
+# lcm = cycles.values.reduce(1, &:lcm)
+# p lcm
+
+p (100..tril/10).bsearch {|f| foo(f)[0] > tril} - 1
+
+# 31 ore -> 1 Fuel
+# 73 ore -> 3 Fuel
+# 240 ore -> 10 Fuel
+
+# fuel = (tril / lcm) * lcm
+# remaining_ore = tril % lcm 10426008580
