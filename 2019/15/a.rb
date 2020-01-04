@@ -16,11 +16,11 @@ t = Thread.new{computer.run()}
     (0..100).each {|x| @map[y][x]='.'}
 end
 @x,@y = [50,50]
+@map[@y][@x] = 'R'
 
 def move_till_wall(i)
     hit_wall = false
     while !hit_wall do
-        @input << i
         hit_wall = move(i)
     end
 end
@@ -31,12 +31,12 @@ def moveback(i, x, y)
     i=3 if i==4
     i=4 if i==3
     while @x!=x && @y!=y do
-        @input << i
         move(i)
     end
 end
 
 def move(i)
+    @input << i
     sleep(0.0001) while @output.empty?
     response = @output.shift
     # puts response
@@ -46,6 +46,7 @@ def move(i)
         @map[@y][@x-1] = '#' if i==3
         @map[@y][@x+1] = '#' if i==4
     else
+        # robot moved, update coordinates
         @map[@y][@x] = ' '
         @y-=1 if i == 1
         @y+=1 if i == 2
@@ -56,6 +57,18 @@ def move(i)
     @map[@y][@x] = 'X' if response == 2
     return response == 0
 end
+
+def explore()
+    ox, oy = [@x, @y]
+    move(1) # move north and back
+    move(2) if [ox,oy] != [@x,@y]
+    move(2) # move south and back
+    move(1) if [ox,oy] != [@x,@y]
+    move(3) # move west and back
+    move(4) if [ox,oy] != [@x,@y]
+    move(4) # move east and back
+    move(3) if [ox,oy] != [@x,@y]
+end    
 
 while true do
     # @map[50][50] = 'O' if @map[50][50] == ' '
@@ -69,7 +82,11 @@ while true do
 
     i = %w(w s a d).index(i) + 1 # i is now 1,2,3,4
 
-    o = [@x,@y]
-    move_till_wall(i)
-    moveback(i, @x, @y)
+    # o = [@x,@y]
+    # move_till_wall(i)
+    # moveback(i, @x, @y)
+    # explore() if !move(i)
+    move(i)
+    explore()
+
 end

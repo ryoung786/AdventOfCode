@@ -1,6 +1,5 @@
 require_relative '../Intcode'
 
-
 def display(disp, score)
     disp.each {|y,h| puts h.values.join('').gsub('0',' ')}
     puts score
