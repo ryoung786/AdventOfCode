@@ -96,7 +96,9 @@ def opendirections()
     return d
 end
 
-while true do
+PART_ONE = false
+
+while true && PART_ONE do
     @map[DIM/2][DIM/2] = 'O' if @map[DIM/2][DIM/2] == ' '
     display(@map)
     i=0
@@ -108,14 +110,18 @@ while true do
     if  %w(w s a d).include?(i)
         # auto
         i = %w(w s a d).index(i) + 1 # i is now 1,2,3,4
-        move_till_wall(i)
+        # move_till_wall(i)
+        move(i)
+        explore()
 
         # now let's count the walls around us.
         # if 2, just keep going
         # otherwise, display and kick back to user for input
         while countwalls() == 2
             i = opendirections().reject{|d| d==invert(i)}.first
-            move_till_wall(i)
+            # move_till_wall(i)
+            move(i)
+            explore()
         end
     elsif %w(i k j l).include?(i)
         # manual
@@ -125,7 +131,5 @@ while true do
     else
         puts "Wall count: #{countwalls()}"
     end
-
 end
 
-# 60
