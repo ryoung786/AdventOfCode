@@ -1,24 +1,27 @@
 require_relative '../Intcode'
 
-DIM = 100
-
 def display(disp)
     disp.each {|y,h| puts h.values.join('')}
 end
 
-@input = []
-@output = []
-file_input = File.read(File.dirname(__FILE__) + '/input')
-program = file_input.split(',').map(&:to_i)
-computer = Intcode.new(program, @input, @output, 1)
-t = Thread.new{computer.run()}
+PART_ONE = false
+if PART_ONE
+    DIM = 100
 
-@map = Hash.new { |h,k| h[k] = Hash.new(' ') }
-(0..DIM).each do |y|
-    (0..DIM).each {|x| @map[y][x]='.'}
+    @input = []
+    @output = []
+    file_input = File.read(File.dirname(__FILE__) + '/input')
+    program = file_input.split(',').map(&:to_i)
+    computer = Intcode.new(program, @input, @output, 1)
+    t = Thread.new{computer.run()}
+
+    @map = Hash.new { |h,k| h[k] = Hash.new(' ') }
+    (0..DIM).each do |y|
+        (0..DIM).each {|x| @map[y][x]='.'}
+    end
+    @x,@y = [DIM/2,DIM/2]
+    @map[@y][@x] = 'R'
 end
-@x,@y = [DIM/2,DIM/2]
-@map[@y][@x] = 'R'
 
 def move_till_wall(i)
     hit_wall = false
@@ -96,8 +99,6 @@ def opendirections()
     return d
 end
 
-PART_ONE = false
-
 while true && PART_ONE do
     @map[DIM/2][DIM/2] = 'O' if @map[DIM/2][DIM/2] == ' '
     display(@map)
@@ -133,3 +134,56 @@ while true && PART_ONE do
     end
 end
 
+@map = Hash.new { |h,k| h[k] = Hash.new('x') }
+File.foreach(File.dirname(__FILE__) + '/map').with_index do |line, y|
+   @map[y] = Hash[(0...line.length).zip line.chars]
+end
+
+def cells(str)
+    cells = []
+    @map.each do |y, row|
+        row.each {|x, c| cells << [x,y] if c==str}
+    end
+    return cells
+end
+
+def emptycells()
+    cells(' ')
+end
+def oxygencells()
+    cells('O')
+end
+def oxygenleafs()
+    oxygens = oxygencells()
+    oxygens.select do |x,y|
+        hasemptiesaround(x,y)
+    end
+end
+def hasemptiesaround(x,y)
+    return @map[y-1][x] == ' ' ||
+           @map[y+1][x] == ' ' ||
+           @map[y][x-1] == ' ' ||
+           @map[y][x+1] == ' '
+end
+
+def expand(x,y)
+    @map[y-1][x] = 'O' if @map[y-1][x] == ' '
+    @map[y+1][x] = 'O' if @map[y+1][x] == ' '
+    @map[y][x-1] = 'O' if @map[y][x-1] == ' '
+    @map[y][x+1] = 'O' if @map[y][x+1] == ' '
+end
+
+display(@map)
+ticks = 0
+oxygen_leafs = oxygenleafs()
+while oxygen_leafs.count > 0 && emptycells.count > 0
+    sleep(0.1)
+    new_oxygens = []
+    oxygen_leafs.each {|x,y| expand(x,y)}
+    oxygen_leafs = oxygenleafs()
+    ticks += 1
+    display(@map)
+    puts "ticks: #{ticks}"
+end
+
+p ticks
