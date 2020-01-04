@@ -178,7 +178,6 @@ ticks = 0
 oxygen_leafs = oxygenleafs()
 while oxygen_leafs.count > 0 && emptycells.count > 0
     sleep(0.1)
-    new_oxygens = []
     oxygen_leafs.each {|x,y| expand(x,y)}
     oxygen_leafs = oxygenleafs()
     ticks += 1
