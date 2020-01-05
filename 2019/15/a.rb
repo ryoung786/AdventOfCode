@@ -173,16 +173,16 @@ def expand(x,y)
     @map[y][x+1] = 'O' if @map[y][x+1] == ' '
 end
 
-display(@map)
+# display(@map)
 ticks = 0
 oxygen_leafs = oxygenleafs()
 while oxygen_leafs.count > 0 && emptycells.count > 0
-    sleep(0.1)
+    # sleep(0.1)
     oxygen_leafs.each {|x,y| expand(x,y)}
     oxygen_leafs = oxygenleafs()
     ticks += 1
-    display(@map)
-    puts "ticks: #{ticks}"
+    # display(@map)
+    # puts "ticks: #{ticks}"
 end
 
 p ticks
