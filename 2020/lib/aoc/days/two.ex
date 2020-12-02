@@ -34,7 +34,10 @@ defmodule Aoc.Days.Two do
 
   @spec is_password_valid_b(integer(), integer(), String.t(), String.t()) :: boolean()
   def is_password_valid_b(a, b, letter, password) do
-    (String.at(password, a - 1) == letter and String.at(password, b - 1) != letter) or
-      (String.at(password, a - 1) != letter and String.at(password, b - 1) == letter)
+    case {String.at(password, a - 1), String.at(password, b - 1)} do
+      {^letter, n} -> n != letter
+      {n, ^letter} -> n != letter
+      _ -> false
+    end
   end
 end
