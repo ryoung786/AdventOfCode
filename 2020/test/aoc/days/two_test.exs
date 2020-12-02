@@ -7,18 +7,18 @@ defmodule Aoc.Days.TwoTest do
   end
 
   test "part a", %{arr: arr} do
-    assert count_all_valid_passwords(arr) == 2
+    assert count_all_valid_passwords(arr, &is_password_valid/4) == 2
   end
 
   test "is_password_valid" do
-    assert is_password_valid("abcde", {"a", 1..3})
-    assert not is_password_valid("cdefg", {"b", 1..3})
-    assert is_password_valid("ccccccccc", {"c", 2..9})
-    assert not is_password_valid("zrrkcrrrrrlh", {"r", 11..12})
+    assert is_password_valid(1, 3, "a", "abcde")
+    assert not is_password_valid(1, 3, "b", "cdefg")
+    assert is_password_valid(2, 9, "c", "ccccccccc")
+    assert not is_password_valid(11, 12, "r", "zrrkcrrrrrlh")
   end
 
   test "part b", %{arr: arr} do
-    assert count_all_valid_passwords_b(arr) == 1
+    assert count_all_valid_passwords(arr, &is_password_valid_b/4) == 1
   end
 
   test "parse_line" do
@@ -29,11 +29,11 @@ defmodule Aoc.Days.TwoTest do
   end
 
   test "is_password_valid_b" do
-    assert is_password_valid_b("abcde", {"a", 1, 3})
-    assert not is_password_valid_b("cdefg", {"b", 1, 3})
-    assert not is_password_valid_b("ccccccccc", {"c", 2, 9})
-    assert not is_password_valid_b("zrrkcrrrrrlh", {"r", 11, 12})
+    assert is_password_valid_b(1, 3, "a", "abcde")
+    assert not is_password_valid_b(1, 3, "b", "cdefg")
+    assert not is_password_valid_b(2, 9, "c", "ccccccccc")
+    assert not is_password_valid_b(11, 12, "r", "zrrkcrrrrrlh")
 
-    assert not is_password_valid_b("vhqvlvwvzqwqvrxvjnf", {"v", 7, 9})
+    assert not is_password_valid_b(7, 9, "v", "vhqvlvwvzqwqvrxvjnf")
   end
 end
