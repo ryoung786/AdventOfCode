@@ -16,7 +16,7 @@ config :aoc, AocWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
   check_origin: [
     "https://aoc.ryoung.info",
-    "https://advent-of-code-ryoung.herokuapp.com"
+    "https://aoc2020-ryoung.herokuapp.com"
   ]
 
 # Do not print debug messages in production
