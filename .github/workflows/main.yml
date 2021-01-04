@@ -6,12 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
-  defaults:
-    run:
-      shell: bash
-      working-directory: 2020
+defaults:
+  run:
+    shell: bash
+    working-directory: 2020
 
+jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
