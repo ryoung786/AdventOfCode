@@ -16,7 +16,7 @@ defmodule AocWeb.AnswerComponent do
   end
 
   defp gh_path(day) do
-    gh_base = "https://github.com/ryoung786/advent_of_code_2020/blob/main/lib/aoc/days/"
+    gh_base = "https://github.com/ryoung786/AdventOfCode/blob/main/2020/lib/aoc/days/"
 
     if String.to_integer(day) in 1..25,
       do: gh_base <> "d_#{String.pad_leading(day, 2, "0")}.ex",
