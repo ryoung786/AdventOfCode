@@ -1,6 +1,6 @@
-defmodule Aoc.Days.OneTest do
+defmodule Aoc.Days.D_01_Test do
   use ExUnit.Case, async: true
-  import Aoc.Days.One
+  import Aoc.Days.D_01
 
   setup_all do
     %{arr: [1721, 979, 366, 299, 675, 1456]}

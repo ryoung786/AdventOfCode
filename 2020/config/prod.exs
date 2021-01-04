@@ -10,8 +10,14 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :aoc, AocWeb.Endpoint,
-  url: [host: "example.com", port: 80],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  http: [port: {:system, "PORT"}],
+  url: [scheme: "https", host: "aoc.ryoung.info", port: 443],
+  # force_ssl: [rewrite_on: [:x_forwarded_proto]],
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  check_origin: [
+    "https://aoc.ryoung.info",
+    "https://advent-of-code-ryoung.herokuapp.com"
+  ]
 
 # Do not print debug messages in production
 config :logger, level: :info

@@ -2,6 +2,49 @@
 @import "./phoenix.css";
 @import "../node_modules/nprogress/nprogress.css";
 
+header section.container {
+  padding: 1.5rem 2rem;
+  img { display: block; }
+  flex-direction: row;
+}
+
+.days ul {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 200px;
+  list-style: none;
+  align-items: center;
+  justify-items: center;
+  li {
+    margin: 0;
+    &:first-child {
+      grid-column-start: 3;
+    }
+  }
+}
+
+.day11 {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  .part {
+    img {
+      width: 300px;
+    }
+  }
+}
+
+.day20 {
+  .empty1 { fill: darkseagreen; }
+  .empty { fill: lightblue; }
+  .wave { fill: blue; }
+  .wave2 { fill: floralwhite; }
+  .monster { fill: indigo; }
+}
+
+
+
+
 /* LiveView specific classes for your customizations */
 .phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {

@@ -1,11 +1,18 @@
-defmodule Aoc.Days.Two do
-  alias Aoc.Util
+defmodule Aoc.Days.D_02 do
+  use Aoc.Days.Base
 
-  def process() do
-    arr = Util.read_file("02_a.input")
+  defp parse_input_str(str), do: str |> String.split("\n", trim: true)
 
-    {count_all_valid_passwords(arr, &is_password_valid/4),
-     count_all_valid_passwords(arr, &is_password_valid_b/4)}
+  @impl true
+  def part_one(str) do
+    arr = parse_input_str(str)
+    {"Num valid passwords:", count_all_valid_passwords(arr, &is_password_valid/4)}
+  end
+
+  @impl true
+  def part_two(str) do
+    arr = parse_input_str(str)
+    {"Num valid passwords:", count_all_valid_passwords(arr, &is_password_valid_b/4)}
   end
 
   def count_all_valid_passwords(arr, validator_function) do

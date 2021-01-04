@@ -1,14 +1,20 @@
-defmodule Aoc.Days.One do
-  alias Aoc.Util
+defmodule Aoc.Days.D_01 do
+  use Aoc.Days.Base
 
-  def process() do
-    arr =
-      Util.read_file("01_a.input")
-      |> Enum.map(&String.to_integer/1)
+  defp parse_input_str(str), do: str |> Util.int_array()
 
+  @impl true
+  def part_one(str) do
+    arr = parse_input_str(str)
     {a, b} = pair_that_sums_to_target(arr, 2020)
+    {"Part one:", "#{a} * #{b} = #{a * b}"}
+  end
+
+  @impl true
+  def part_two(str) do
+    arr = parse_input_str(str)
     {x, y, z} = trio_that_sums_to_target(arr, 2020)
-    {{a * b, a, b}, {x * y * z, x, y, z}}
+    {"Part two:", "#{x} * #{y} * #{z} = #{x * y * z}"}
   end
 
   def pair_that_sums_to_target(arr, target) do

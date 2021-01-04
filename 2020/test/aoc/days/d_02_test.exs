@@ -1,6 +1,6 @@
-defmodule Aoc.Days.TwoTest do
+defmodule Aoc.Days.D_02_Test do
   use ExUnit.Case, async: true
-  import Aoc.Days.Two
+  import Aoc.Days.D_02
 
   setup_all do
     %{arr: ["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]}

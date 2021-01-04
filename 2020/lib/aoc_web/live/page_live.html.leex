@@ -1,11 +1,12 @@
 <section class="phx-hero">
-  <h1>Advent of Code</h1>
+  <h1>Advent of Code 2020</h1>
   <p>A December tradition</p>
 </section>
 
 <section class="days">
   <ul>
-    <li><a href="/days/1">1</a></li>
-    <li><a href="/days/2">2</a></li>
+    <%= for day <- 1..25 do %>
+      <li><%= live_redirect "#{day}", to: Routes.day_path(@socket, :index, day) %></li>
+    <% end %>
   </ul>
 </section>
