@@ -13,4 +13,9 @@ defmodule IntcodeTest do
     assert run([2, 4, 4, 5, 99, 0]) == to_map([2, 4, 4, 5, 99, 9801])
     assert run([1, 1, 1, 4, 99, 5, 6, 0, 99]) == to_map([30, 1, 1, 4, 2, 5, 6, 0, 99])
   end
+
+  test "param_modes" do
+    assert run([1002, 4, 3, 4, 33]) == to_map([1002, 4, 3, 4, 99])
+    assert run([1101, 100, -1, 4, 0]) == to_map([1101, 100, -1, 4, 99])
+  end
 end
