@@ -26,6 +26,38 @@ defmodule Intcode.Opcode do
     Map.merge(state, %{output: [val | state.output], ptr: state.ptr + 2})
   end
 
+  def jump_if_true(param_modes, state) do
+    [a, b] = params(state.memory, state.ptr, param_modes, 2)
+
+    if a != 0,
+      do: Map.put(state, :ptr, b),
+      else: Map.update!(state, :ptr, &(&1 + 3))
+  end
+
+  def jump_if_false(param_modes, state) do
+    [a, b] = params(state.memory, state.ptr, param_modes, 2)
+
+    if a == 0,
+      do: Map.put(state, :ptr, b),
+      else: Map.update!(state, :ptr, &(&1 + 3))
+  end
+
+  def less_than(param_modes, state) do
+    [a, b] = params(state.memory, state.ptr, param_modes, 2)
+
+    val = if a < b, do: 1, else: 0
+    mem = Map.put(state.memory, state.memory[state.ptr + 3], val)
+    Map.merge(state, %{memory: mem, ptr: state.ptr + 4})
+  end
+
+  def equals(param_modes, state) do
+    [a, b] = params(state.memory, state.ptr, param_modes, 2)
+
+    val = if a == b, do: 1, else: 0
+    mem = Map.put(state.memory, state.memory[state.ptr + 3], val)
+    Map.merge(state, %{memory: mem, ptr: state.ptr + 4})
+  end
+
   def params(mem, ptr, modes, n) do
     for i <- 1..n do
       case modes |> at(i - 1) do
@@ -87,6 +119,10 @@ defmodule Intcode do
       2 -> mult(instruction.param_modes, state) |> _run()
       3 -> Intcode.Opcode.input(state) |> _run()
       4 -> Intcode.Opcode.output(instruction.param_modes, state) |> _run()
+      5 -> jump_if_true(instruction.param_modes, state) |> _run()
+      6 -> jump_if_false(instruction.param_modes, state) |> _run()
+      7 -> less_than(instruction.param_modes, state) |> _run()
+      8 -> equals(instruction.param_modes, state) |> _run()
       opcode -> {:unrecognized_opcode, opcode}
     end
   end

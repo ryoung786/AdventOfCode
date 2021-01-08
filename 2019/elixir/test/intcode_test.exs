@@ -77,4 +77,23 @@ defmodule IntcodeTest do
     {:ok, vm} = Intcode.new(prog, [4])
     assert Intcode.run_sync(vm) |> Map.get(:output) == [1]
   end
+
+  test "compare to 8" do
+    prog =
+      """
+      3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+      1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
+      999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99
+      """
+      |> String.split(",", trim: true)
+      |> Enum.map(&String.trim/1)
+      |> Enum.map(&String.to_integer/1)
+
+    {:ok, vm} = Intcode.new(prog, [4])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [999]
+    {:ok, vm} = Intcode.new(prog, [8])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1000]
+    {:ok, vm} = Intcode.new(prog, [39])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1001]
+  end
 end
