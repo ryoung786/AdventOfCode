@@ -1,7 +1,6 @@
 defmodule Days.D_04_Test do
   use ExUnit.Case
   import Days.D_04
-  import Enum
 
   test "a" do
     n = 111_111

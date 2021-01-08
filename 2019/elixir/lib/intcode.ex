@@ -24,24 +24,50 @@ defmodule Intcode.Opcode do
 end
 
 defmodule Intcode do
+  use GenServer
   import Enum
   import Intcode.Opcode
 
-  def run(program, ptr \\ 0)
+  defmodule State, do: defstruct(memory: %{}, ptr: 0, input: [], output: [])
 
-  def run(program, ptr) when is_list(program) do
-    m = program |> with_index() |> map(fn {v, i} -> {i, v} end) |> Map.new()
-    run(m, ptr)
+  ## Client
+
+  def new(program) do
+    memory = program |> with_index() |> map(fn {v, i} -> {i, v} end) |> Map.new()
+    GenServer.start_link(__MODULE__, %State{memory: memory})
   end
 
-  def run(%{} = memory, ptr) do
+  def run(vm), do: GenServer.cast(vm, :run)
+  def run_sync(vm), do: GenServer.call(vm, :run)
+
+  ## Server
+
+  @impl true
+  def init(state), do: {:ok, state}
+
+  @impl true
+  def handle_call(:run, _from, state) do
+    state = _run(state)
+    {:stop, :normal, state, state}
+  end
+
+  def _run(%{memory: memory, ptr: ptr} = state) do
     instruction = Map.get(memory, ptr) |> parse_instruction()
 
     case instruction.opcode do
-      99 -> halt(memory)
-      1 -> add(memory, ptr, instruction.param_modes) |> run(ptr + 4)
-      2 -> mult(memory, ptr, instruction.param_modes) |> run(ptr + 4)
-      _ -> :error
+      99 ->
+        halt(memory)
+
+      1 ->
+        m = add(memory, ptr, instruction.param_modes)
+        state |> Map.put(:memory, m) |> Map.update!(:ptr, &(&1 + 4)) |> _run()
+
+      2 ->
+        m = mult(memory, ptr, instruction.param_modes)
+        state |> Map.put(:memory, m) |> Map.update!(:ptr, &(&1 + 4)) |> _run()
+
+      _ ->
+        :error
     end
   end
 

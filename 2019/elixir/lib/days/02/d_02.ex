@@ -35,7 +35,7 @@ defmodule Days.D_02 do
     mem
     |> List.replace_at(1, noun)
     |> List.replace_at(2, verb)
-    |> Intcode.run()
+    |> Intcode.run_sync()
     |> Map.get(0)
   end
 end

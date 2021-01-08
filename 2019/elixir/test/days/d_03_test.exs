@@ -1,7 +1,6 @@
 defmodule Days.D_03_Test do
   use ExUnit.Case
   import Days.D_03
-  import Enum
 
   setup_all do
     %{

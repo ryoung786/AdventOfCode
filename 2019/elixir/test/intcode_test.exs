@@ -1,8 +1,12 @@
 defmodule IntcodeTest do
   use ExUnit.Case
-  import Intcode
 
   def to_map(lst), do: lst |> Enum.with_index() |> Enum.map(fn {v, i} -> {i, v} end) |> Map.new()
+
+  def run(prog) do
+    {:ok, vm} = Intcode.new(prog)
+    Intcode.run_sync(vm)
+  end
 
   test "intro" do
     assert run([1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50]) ==
