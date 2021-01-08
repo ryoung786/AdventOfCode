@@ -22,4 +22,59 @@ defmodule IntcodeTest do
     assert run([1002, 4, 3, 4, 33]) == to_map([1002, 4, 3, 4, 99])
     assert run([1101, 100, -1, 4, 0]) == to_map([1101, 100, -1, 4, 99])
   end
+
+  test "equals 8, position mode" do
+    prog = [3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8]
+    {:ok, vm} = Intcode.new(prog, [3])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [0]
+
+    {:ok, vm} = Intcode.new(prog, [8])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1]
+  end
+
+  test "equals 8, immediate mode" do
+    prog = [3, 3, 1108, -1, 8, 3, 4, 3, 99]
+    {:ok, vm} = Intcode.new(prog, [3])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [0]
+
+    {:ok, vm} = Intcode.new(prog, [8])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1]
+  end
+
+  test "less than 8, position mode" do
+    prog = [3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8]
+    {:ok, vm} = Intcode.new(prog, [3])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1]
+
+    {:ok, vm} = Intcode.new(prog, [18])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [0]
+  end
+
+  test "less than 8, immediate mode" do
+    prog = [3, 3, 1107, -1, 8, 3, 4, 3, 99]
+    {:ok, vm} = Intcode.new(prog, [3])
+    Intcode.input(vm, 3)
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1]
+
+    {:ok, vm} = Intcode.new(prog, [18])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [0]
+  end
+
+  test "jump, position mode" do
+    prog = [3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9]
+    {:ok, vm} = Intcode.new(prog, [0])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [0]
+
+    {:ok, vm} = Intcode.new(prog, [4])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1]
+  end
+
+  test "jump, immediate mode" do
+    prog = [3, 3, 1105, -1, 9, 1101, 0, 0, 12, 4, 12, 99, 1]
+    {:ok, vm} = Intcode.new(prog, [0])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [0]
+
+    {:ok, vm} = Intcode.new(prog, [4])
+    assert Intcode.run_sync(vm) |> Map.get(:output) == [1]
+  end
 end

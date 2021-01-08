@@ -45,9 +45,9 @@ defmodule Intcode do
 
   ## Client
 
-  def new(program) do
+  def new(program, input \\ []) do
     memory = program |> with_index() |> map(fn {v, i} -> {i, v} end) |> Map.new()
-    GenServer.start_link(__MODULE__, %State{memory: memory})
+    GenServer.start_link(__MODULE__, %State{memory: memory, input: input})
   end
 
   def run(vm), do: GenServer.cast(vm, :run)
