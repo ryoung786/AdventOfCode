@@ -1,16 +1,29 @@
 defmodule Intcode.Opcode do
   import Enum
 
-  def halt(mem), do: mem
+  def halt(state), do: state
 
-  def add(mem, ptr, param_modes) do
-    [a, b] = params(mem, ptr, param_modes, 2)
-    Map.put(mem, mem[ptr + 3], a + b)
+  def add(param_modes, state) do
+    [a, b] = params(state.memory, state.ptr, param_modes, 2)
+    mem = Map.put(state.memory, state.memory[state.ptr + 3], a + b)
+    Map.merge(state, %{memory: mem, ptr: state.ptr + 4})
   end
 
-  def mult(mem, ptr, param_modes) do
-    [a, b] = params(mem, ptr, param_modes, 2)
-    Map.put(mem, mem[ptr + 3], a * b)
+  def mult(param_modes, state) do
+    [a, b] = params(state.memory, state.ptr, param_modes, 2)
+    mem = Map.put(state.memory, state.memory[state.ptr + 3], a * b)
+    Map.merge(state, %{memory: mem, ptr: state.ptr + 4})
+  end
+
+  def input(state) do
+    [val | input] = state.input
+    mem = Map.put(state.memory, state.memory[state.ptr + 1], val)
+    Map.merge(state, %{memory: mem, input: input, ptr: state.ptr + 2})
+  end
+
+  def output(param_modes, state) do
+    [val] = params(state.memory, state.ptr, param_modes, 1)
+    Map.merge(state, %{output: [val | state.output], ptr: state.ptr + 2})
   end
 
   def params(mem, ptr, modes, n) do
@@ -40,10 +53,18 @@ defmodule Intcode do
   def run(vm), do: GenServer.cast(vm, :run)
   def run_sync(vm), do: GenServer.call(vm, :run)
 
+  def input(vm, n), do: GenServer.cast(vm, {:input, n})
+  def get_state(vm), do: GenServer.call(vm, :get_state)
+
   ## Server
 
   @impl true
   def init(state), do: {:ok, state}
+
+  @impl true
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
+  end
 
   @impl true
   def handle_call(:run, _from, state) do
@@ -51,23 +72,22 @@ defmodule Intcode do
     {:stop, :normal, state, state}
   end
 
+  @impl true
+  def handle_cast({:input, n}, state) do
+    lst = if is_list(n), do: n, else: [n]
+    {:noreply, Map.update!(state, :input, &(&1 ++ lst))}
+  end
+
   def _run(%{memory: memory, ptr: ptr} = state) do
     instruction = Map.get(memory, ptr) |> parse_instruction()
 
     case instruction.opcode do
-      99 ->
-        halt(memory)
-
-      1 ->
-        m = add(memory, ptr, instruction.param_modes)
-        state |> Map.put(:memory, m) |> Map.update!(:ptr, &(&1 + 4)) |> _run()
-
-      2 ->
-        m = mult(memory, ptr, instruction.param_modes)
-        state |> Map.put(:memory, m) |> Map.update!(:ptr, &(&1 + 4)) |> _run()
-
-      _ ->
-        :error
+      99 -> halt(state)
+      1 -> add(instruction.param_modes, state) |> _run()
+      2 -> mult(instruction.param_modes, state) |> _run()
+      3 -> Intcode.Opcode.input(state) |> _run()
+      4 -> Intcode.Opcode.output(instruction.param_modes, state) |> _run()
+      opcode -> {:unrecognized_opcode, opcode}
     end
   end
 

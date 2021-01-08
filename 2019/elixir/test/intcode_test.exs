@@ -5,7 +5,7 @@ defmodule IntcodeTest do
 
   def run(prog) do
     {:ok, vm} = Intcode.new(prog)
-    Intcode.run_sync(vm)
+    Intcode.run_sync(vm) |> Map.get(:memory)
   end
 
   test "intro" do
