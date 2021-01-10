@@ -17,7 +17,7 @@ defmodule Intcode.Opcode do
     Map.merge(state, %{memory: mem, ptr: state.ptr + 4})
   end
 
-  def input(%{input: []} = state), do: put_in(state.status, :waiting_for_input)
+  def input(_, %{input: []} = state), do: put_in(state.status, :waiting_for_input)
 
   def input(param_modes, state) do
     [{:addr, write_addr}] = params(state, param_modes, 1)
