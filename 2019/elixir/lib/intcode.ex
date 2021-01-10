@@ -23,7 +23,7 @@ defmodule Intcode do
 
   def run(vm), do: GenServer.cast(vm, :run)
   def run_sync(vm), do: GenServer.call(vm, :run)
-
+  def step(vm), do: GenServer.call(vm, :step)
   def input(vm, n), do: GenServer.cast(vm, {:input, n})
   def get_state(vm), do: GenServer.call(vm, :get_state)
 
@@ -47,6 +47,15 @@ defmodule Intcode do
   end
 
   @impl true
+  def handle_call(:step, _from, state) do
+    state = _step(state)
+
+    if state.status == :halted,
+      do: {:stop, :normal, state, state},
+      else: {:reply, state, state}
+  end
+
+  @impl true
   def handle_cast(:run, state) do
     state = _run(state)
 
@@ -61,18 +70,19 @@ defmodule Intcode do
     {:noreply, Map.update!(state, :input, &(&1 ++ lst))}
   end
 
-  def _run(%{status: :halted} = state), do: state
-  def _run(%{status: :waiting_for_input, input: []} = state), do: state
-  def _run({:unrecognized_opcode, opcode}), do: {:unrecognized_opcode, opcode}
+  defp _run(%{status: :halted} = state), do: state
+  defp _run(%{status: :waiting_for_input, input: []} = state), do: state
+  defp _run({:unrecognized_opcode, opcode}), do: {:unrecognized_opcode, opcode}
+  defp _run(state), do: _step(state) |> _run()
 
-  def _run(%{memory: memory, ptr: ptr} = state) do
+  defp _step(%{memory: memory, ptr: ptr} = state) do
     instruction = Map.get(memory, ptr) |> parse_instruction()
 
     case instruction.opcode do
       99 -> halt(state)
       1 -> add(instruction.param_modes, state)
       2 -> mult(instruction.param_modes, state)
-      3 -> Intcode.Opcode.input(state)
+      3 -> Intcode.Opcode.input(instruction.param_modes, state)
       4 -> Intcode.Opcode.output(instruction.param_modes, state)
       5 -> jump_if_true(instruction.param_modes, state)
       6 -> jump_if_false(instruction.param_modes, state)
@@ -81,7 +91,6 @@ defmodule Intcode do
       9 -> adjust_relative_base(instruction.param_modes, state)
       opcode -> {:unrecognized_opcode, opcode}
     end
-    |> _run()
   end
 
   defp opcode(val), do: rem(val, 100)
@@ -91,6 +100,6 @@ defmodule Intcode do
     (val / 100) |> floor() |> Integer.digits() |> reverse() |> map(fn n -> lookup[n] end)
   end
 
-  def parse_instruction(instruction),
+  defp parse_instruction(instruction),
     do: %{opcode: opcode(instruction), param_modes: param_modes(instruction)}
 end
