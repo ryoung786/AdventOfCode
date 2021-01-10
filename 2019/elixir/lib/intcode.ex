@@ -3,7 +3,16 @@ defmodule Intcode do
   import Enum
   import Intcode.Opcode
 
-  defmodule State, do: defstruct(memory: %{}, ptr: 0, input: [], output: [], status: :on)
+  defmodule State do
+    defstruct(
+      memory: %{},
+      ptr: 0,
+      input: [],
+      output: [],
+      status: :on,
+      relative_base: 0
+    )
+  end
 
   ## Client
 
@@ -69,6 +78,7 @@ defmodule Intcode do
       6 -> jump_if_false(instruction.param_modes, state)
       7 -> less_than(instruction.param_modes, state)
       8 -> equals(instruction.param_modes, state)
+      9 -> adjust_relative_base(instruction.param_modes, state)
       opcode -> {:unrecognized_opcode, opcode}
     end
     |> _run()
@@ -77,7 +87,7 @@ defmodule Intcode do
   defp opcode(val), do: rem(val, 100)
 
   defp param_modes(val) do
-    lookup = %{0 => :position, 1 => :immediate}
+    lookup = %{0 => :position, 1 => :immediate, 2 => :relative}
     (val / 100) |> floor() |> Integer.digits() |> reverse() |> map(fn n -> lookup[n] end)
   end
 

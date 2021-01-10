@@ -96,4 +96,24 @@ defmodule IntcodeTest do
     {:ok, vm} = Intcode.new(prog, [39])
     assert Intcode.run_sync(vm) |> Map.get(:output) == [1001]
   end
+
+  test "relative_mode" do
+    prog = [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99]
+    {:ok, vm} = Intcode.new(prog)
+    assert Intcode.run_sync(vm) |> Map.get(:output) |> Enum.reverse() == prog
+
+    prog = [1102, 34_915_192, 34_915_192, 7, 4, 7, 99, 0]
+    {:ok, vm} = Intcode.new(prog)
+
+    assert 16 ==
+             Intcode.run_sync(vm)
+             |> Map.get(:output)
+             |> hd()
+             |> Integer.digits()
+             |> Enum.count()
+
+    prog = [104, 1_125_899_906_842_624, 99]
+    {:ok, vm} = Intcode.new(prog)
+    assert Intcode.run_sync(vm) |> Map.get(:output) |> hd() == 1_125_899_906_842_624
+  end
 end
