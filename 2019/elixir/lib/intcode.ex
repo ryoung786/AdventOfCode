@@ -3,7 +3,7 @@ defmodule Intcode do
   import Enum
   import Intcode.Opcode
 
-  defmodule State, do: defstruct(memory: %{}, ptr: 0, input: [], output: [])
+  defmodule State, do: defstruct(memory: %{}, ptr: 0, input: [], output: [], status: :on)
 
   ## Client
 
@@ -31,7 +31,19 @@ defmodule Intcode do
   @impl true
   def handle_call(:run, _from, state) do
     state = _run(state)
-    {:stop, :normal, state, state}
+
+    if state.status == :halted,
+      do: {:stop, :normal, state, state},
+      else: {:reply, state, state}
+  end
+
+  @impl true
+  def handle_cast(:run, state) do
+    state = _run(state)
+
+    if state.status == :halted,
+      do: {:stop, :normal, state},
+      else: {:noreply, state}
   end
 
   @impl true
@@ -40,21 +52,26 @@ defmodule Intcode do
     {:noreply, Map.update!(state, :input, &(&1 ++ lst))}
   end
 
+  def _run(%{status: :halted} = state), do: state
+  def _run(%{status: :waiting_for_input, input: []} = state), do: state
+  def _run({:unrecognized_opcode, opcode}), do: {:unrecognized_opcode, opcode}
+
   def _run(%{memory: memory, ptr: ptr} = state) do
     instruction = Map.get(memory, ptr) |> parse_instruction()
 
     case instruction.opcode do
       99 -> halt(state)
-      1 -> add(instruction.param_modes, state) |> _run()
-      2 -> mult(instruction.param_modes, state) |> _run()
-      3 -> Intcode.Opcode.input(state) |> _run()
-      4 -> Intcode.Opcode.output(instruction.param_modes, state) |> _run()
-      5 -> jump_if_true(instruction.param_modes, state) |> _run()
-      6 -> jump_if_false(instruction.param_modes, state) |> _run()
-      7 -> less_than(instruction.param_modes, state) |> _run()
-      8 -> equals(instruction.param_modes, state) |> _run()
+      1 -> add(instruction.param_modes, state)
+      2 -> mult(instruction.param_modes, state)
+      3 -> Intcode.Opcode.input(state)
+      4 -> Intcode.Opcode.output(instruction.param_modes, state)
+      5 -> jump_if_true(instruction.param_modes, state)
+      6 -> jump_if_false(instruction.param_modes, state)
+      7 -> less_than(instruction.param_modes, state)
+      8 -> equals(instruction.param_modes, state)
       opcode -> {:unrecognized_opcode, opcode}
     end
+    |> _run()
   end
 
   defp opcode(val), do: rem(val, 100)

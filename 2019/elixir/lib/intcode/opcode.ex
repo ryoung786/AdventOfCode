@@ -1,7 +1,7 @@
 defmodule Intcode.Opcode do
   import Enum
 
-  def halt(state), do: state
+  def halt(state), do: put_in(state.status, :halted)
 
   def add(param_modes, state) do
     [a, b] = params(state.memory, state.ptr, param_modes, 2)
@@ -15,10 +15,12 @@ defmodule Intcode.Opcode do
     Map.merge(state, %{memory: mem, ptr: state.ptr + 4})
   end
 
+  def input(%{input: []} = state), do: put_in(state.status, :waiting_for_input)
+
   def input(state) do
     [val | input] = state.input
     mem = Map.put(state.memory, state.memory[state.ptr + 1], val)
-    Map.merge(state, %{memory: mem, input: input, ptr: state.ptr + 2})
+    Map.merge(state, %{memory: mem, input: input, ptr: state.ptr + 2, status: :running})
   end
 
   def output(param_modes, state) do
