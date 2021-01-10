@@ -25,6 +25,7 @@ defmodule Intcode do
   def run_sync(vm), do: GenServer.call(vm, :run)
   def step(vm), do: GenServer.call(vm, :step)
   def input(vm, n), do: GenServer.cast(vm, {:input, n})
+  def flush_output(vm), do: GenServer.call(vm, :flush_output)
   def get_state(vm), do: GenServer.call(vm, :get_state)
 
   ## Server
@@ -35,6 +36,11 @@ defmodule Intcode do
   @impl true
   def handle_call(:get_state, _from, state) do
     {:reply, state, state}
+  end
+
+  @impl true
+  def handle_call(:flush_output, _from, state) do
+    {:reply, state.output, %{state | output: []}}
   end
 
   @impl true
