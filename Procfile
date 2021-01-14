@@ -1,0 +1,1 @@
+web: cd site && mix phx.server

@@ -60,4 +60,3 @@ jobs:
           heroku_app_name: "advent-of-code-ryoung" #Must be unique in Heroku
           heroku_email: "${{secrets.HEROKU_EMAIL}}"
           buildpack: "https://github.com/HashNuke/heroku-buildpack-elixir.git"
-          appdir: site
