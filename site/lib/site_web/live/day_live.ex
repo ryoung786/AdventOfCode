@@ -5,8 +5,14 @@ defmodule SiteWeb.DayLive do
   @supplemental_views %{11 => SiteWeb.Day202011Live, 20 => SiteWeb.Day202020Live}
 
   @impl true
-  def mount(%{"day" => day}, _session, socket) do
-    module = Aoc2020.Days.get_module(day)
+  def mount(%{"day" => day, "year" => 2020}, _session, socket) do
+    {:ok, socket |> mount_year(Aoc2020, day)}
+  end
+
+  end
+  @impl true
+  def mount(socket, year_module, day) do
+    module = year_module.Days.get_module(day)
     lv_pid = self()
 
     # We don't have to worry about killing these tasks as they will die when the page is refreshed
@@ -26,13 +32,11 @@ defmodule SiteWeb.DayLive do
         res || Task.shutdown(task, :brutal_kill)
       end)
 
-    {:ok,
      assign(socket,
        day: day,
        part_one: answer_or_calculating(p1),
        part_two: answer_or_calculating(p2),
-       supplemental_view: Map.get(@supplemental_views, String.to_integer(day))
-     )}
+       supplemental_view: Map.get(@supplemental_views, String.to_integer(day)))
   end
 
   defp answer_or_calculating({:ok, {label, val}}), do: "#{label} #{val}"

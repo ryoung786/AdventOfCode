@@ -23,7 +23,7 @@ defmodule SiteWeb.Router do
 
     live "/", PageLive, :index
 
-    scope "/days/:day" do
+    scope "/:year/:day" do
       pipe_through :valid_day
       live "/", DayLive, :index
     end
@@ -39,9 +39,10 @@ defmodule SiteWeb.Router do
   end
 
   defp ensure_valid_day(conn, _opts) do
+    year = conn.path_params["year"] |> String.to_integer()
     day = conn.path_params["day"] |> String.to_integer()
 
-    if day in 1..25 do
+    if day in 1..25 and year in 2018..2020 do
       conn
     else
       conn

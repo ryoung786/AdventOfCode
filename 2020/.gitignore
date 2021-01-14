@@ -36,7 +36,7 @@ npm-debug.log
 # emacs temp files
 *~
 \#*\#
-*emacs-elixir-format.exs
+*emacs-elixir-format.ex*
 /.emacs.desktop
 /.emacs.desktop.lock
 *.elc
