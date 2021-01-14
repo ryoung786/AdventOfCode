@@ -2,17 +2,11 @@ defmodule SiteWeb.DayLive do
   use SiteWeb, :live_view
   require Logger
 
-  @supplemental_views %{11 => SiteWeb.Day202011Live, 20 => SiteWeb.Day202020Live}
+  @supplemental_views %{"2020_11" => SiteWeb.Day202011Live, "2020_20" => SiteWeb.Day202020Live}
 
   @impl true
-  def mount(%{"day" => day, "year" => 2020}, _session, socket) do
-    {:ok, socket |> mount_year(Aoc2020, day)}
-  end
-
-  end
-  @impl true
-  def mount(socket, year_module, day) do
-    module = year_module.Days.get_module(day)
+  def mount(%{"year" => year, "day" => day}, _session, socket) do
+    module = get_module(year, day)
     lv_pid = self()
 
     # We don't have to worry about killing these tasks as they will die when the page is refreshed
@@ -32,11 +26,13 @@ defmodule SiteWeb.DayLive do
         res || Task.shutdown(task, :brutal_kill)
       end)
 
+    {:ok,
      assign(socket,
        day: day,
        part_one: answer_or_calculating(p1),
        part_two: answer_or_calculating(p2),
-       supplemental_view: Map.get(@supplemental_views, String.to_integer(day)))
+       supplemental_view: Map.get(@supplemental_views, "#{year}_#{day}")
+     )}
   end
 
   defp answer_or_calculating({:ok, {label, val}}), do: "#{label} #{val}"
@@ -61,8 +57,21 @@ defmodule SiteWeb.DayLive do
       do: {:noreply, assign(socket, part_two: "#{label} #{val}")}
 
   @impl true
+  def handle_info(%{day: day, part_one: val}, %{assigns: %{day: s_day}} = socket)
+      when day == s_day,
+      do: {:noreply, assign(socket, part_one: "#{val}")}
+
+  @impl true
+  def handle_info(%{day: day, part_two: val}, %{assigns: %{day: s_day}} = socket)
+      when day == s_day,
+      do: {:noreply, assign(socket, part_two: "#{val}")}
+
+  @impl true
   def handle_info(msg, socket) do
     Logger.info("[xxx] generic handle info #{inspect(msg)}")
     {:noreply, socket}
   end
+
+  defp get_module(year, day),
+    do: String.to_existing_atom("Elixir.Aoc#{year}.Days.D_#{String.pad_leading(day, 2, "0")}")
 end
