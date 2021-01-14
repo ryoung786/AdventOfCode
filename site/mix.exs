@@ -43,9 +43,9 @@ defmodule Site.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"},
-      {:aoc2019, github: "ryoung786/AdventOfCode", sparse: "2019/elixir"},
-      {:aoc2020, github: "ryoung786/AdventOfCode", sparse: "2020"}
+      {:plug_cowboy, "~> 2.0"}
+      # {:aoc2019, github: "ryoung786/AdventOfCode", sparse: "2019/elixir"},
+      # {:aoc2020, github: "ryoung786/AdventOfCode", sparse: "2020"}
     ]
   end
 
