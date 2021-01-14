@@ -45,7 +45,7 @@ defmodule Site.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:aoc2019, github: "ryoung786/AdventOfCode", sparse: "2019/elixir"},
-      {:aoc2020, github: "ryoung786/AdventOfCode", ref: "4231b68e75c9", sparse: "2020"}
+      {:aoc2020, github: "ryoung786/AdventOfCode", sparse: "2020"}
     ]
   end
 
