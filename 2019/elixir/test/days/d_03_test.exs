@@ -1,6 +1,6 @@
-defmodule Days.D_03_Test do
+defmodule Aoc2019.Days.D_03_Test do
   use ExUnit.Case
-  import Days.D_03
+  import Aoc2019.Days.D_03
 
   setup_all do
     %{

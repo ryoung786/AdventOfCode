@@ -1,5 +1,6 @@
-defmodule IntcodeTest do
+defmodule Aoc2019.IntcodeTest do
   use ExUnit.Case
+  alias Aoc2019.Intcode
 
   def to_map(lst), do: lst |> Enum.with_index() |> Enum.map(fn {v, i} -> {i, v} end) |> Map.new()
 

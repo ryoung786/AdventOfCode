@@ -11,7 +11,7 @@ defmodule Mix.Tasks.Day do
     day = Keyword.get(opts, :day, 1)
     part = Keyword.get(opts, :part, :both)
 
-    module = day |> Integer.to_string() |> Aoc.Days.get_module()
+    module = day |> Integer.to_string() |> Aoc2020.Days.get_module()
 
     case part do
       1 -> module.part_one()

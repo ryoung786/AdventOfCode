@@ -1,5 +1,5 @@
-defmodule Days.D_07 do
-  use Days.Base
+defmodule Aoc2019.Days.D_07 do
+  use Aoc2019.Days.Base
 
   @impl true
   def part_one(str) do

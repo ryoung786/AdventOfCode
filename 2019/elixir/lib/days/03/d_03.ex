@@ -1,5 +1,5 @@
-defmodule Days.D_03 do
-  use Days.Base
+defmodule Aoc2019.Days.D_03 do
+  use Aoc2019.Days.Base
   import Enum
 
   @impl true

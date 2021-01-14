@@ -1,5 +1,5 @@
-defmodule Days.D_11 do
-  use Days.Base
+defmodule Aoc2019.Days.D_11 do
+  use Aoc2019.Days.Base
 
   defmodule Robot do
     defstruct dir: :up, panels: %{}, xy: {0, 0}, vm: nil, intcode_state: nil

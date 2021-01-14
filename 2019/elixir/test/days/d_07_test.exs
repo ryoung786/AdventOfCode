@@ -1,6 +1,6 @@
-defmodule Days.D_07_Test do
+defmodule Aoc2019.Days.D_07_Test do
   use ExUnit.Case
-  import Days.D_07
+  import Aoc2019.Days.D_07
 
   test "a" do
     assert part_one("3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0") == 43210

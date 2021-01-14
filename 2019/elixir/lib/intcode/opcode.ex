@@ -1,4 +1,4 @@
-defmodule Intcode.Opcode do
+defmodule Aoc2019.Intcode.Opcode do
   import Enum
 
   def halt(state), do: put_in(state.status, :halted)

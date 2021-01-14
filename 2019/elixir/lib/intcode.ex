@@ -1,7 +1,8 @@
-defmodule Intcode do
+defmodule Aoc2019.Intcode do
   use GenServer
   import Enum
-  import Intcode.Opcode
+  import Aoc2019.Intcode.Opcode
+  alias Aoc2019.Intcode.Opcode
 
   defmodule State do
     defstruct(
@@ -88,8 +89,8 @@ defmodule Intcode do
       99 -> halt(state)
       1 -> add(instruction.param_modes, state)
       2 -> mult(instruction.param_modes, state)
-      3 -> Intcode.Opcode.input(instruction.param_modes, state)
-      4 -> Intcode.Opcode.output(instruction.param_modes, state)
+      3 -> Opcode.input(instruction.param_modes, state)
+      4 -> Opcode.output(instruction.param_modes, state)
       5 -> jump_if_true(instruction.param_modes, state)
       6 -> jump_if_false(instruction.param_modes, state)
       7 -> less_than(instruction.param_modes, state)

@@ -1,6 +1,6 @@
-defmodule Days.D_04_Test do
+defmodule Aoc2019.Days.D_04_Test do
   use ExUnit.Case
-  import Days.D_04
+  import Aoc2019.Days.D_04
 
   test "a" do
     n = 111_111

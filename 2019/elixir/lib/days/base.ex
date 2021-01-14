@@ -1,4 +1,4 @@
-defmodule Days.Base do
+defmodule Aoc2019.Days.Base do
   require Logger
 
   @callback part_one(String.t()) :: any()
@@ -6,10 +6,11 @@ defmodule Days.Base do
 
   defmacro __using__([]) do
     quote do
-      alias Util
+      alias Aoc2019.Util
+      alias Aoc2019.Intcode
       require Logger
 
-      @behaviour Days.Base
+      @behaviour Aoc2019.Days.Base
 
       def part_one(), do: input() |> part_one()
       def part_two(), do: input() |> part_two()
