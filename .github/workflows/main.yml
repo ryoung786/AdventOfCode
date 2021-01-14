@@ -111,7 +111,7 @@ jobs:
       - run: mix test
 
   deploy:
-    needs: test # Will only run if the test job succeeds
+    needs: [test-site, test-2019, test-2020] # Will only run if the test job succeeds
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     runs-on: ubuntu-latest
