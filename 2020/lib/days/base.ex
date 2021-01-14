@@ -17,7 +17,7 @@ defmodule Aoc2020.Days.Base do
       def part_two(_input), do: {"Part two:", "TBD"}
 
       def input(),
-        do: Path.expand("input", __DIR__) |> File.read!()
+        do: Util.read_file("#{day_from_module()}.input")
 
       defp day_from_module(as_int \\ false) do
         module_name = __MODULE__ |> Atom.to_string()
