@@ -1,4 +1,3 @@
-https://aoc.ryoung.info
+Elixir solutions for 2020 Advent of Code.
 
-# Advent of Code
-This year, using a web harness so that I can visualize the grid-based stuff that is bound to show up.  Hopefully will be a bit easier than the console drawing I used in past years.
+![final gif](https://github.com/ryoung786/AdventOfCode/blob/main/2020/final.gif)
