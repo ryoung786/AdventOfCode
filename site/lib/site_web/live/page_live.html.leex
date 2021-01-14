@@ -6,7 +6,7 @@
 <section class="days">
   <ul>
     <%= for day <- 1..25 do %>
-      <li><%= live_redirect "#{day}", to: Routes.day_path(@socket, :index, day) %></li>
+      <li><%= live_redirect "#{day}", to: Routes.day_path(@socket, :index, 2020, day) %></li>
     <% end %>
   </ul>
 </section>
