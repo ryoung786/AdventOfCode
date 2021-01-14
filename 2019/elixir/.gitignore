@@ -25,3 +25,30 @@ aoc-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+# emacs temp files
+*~
+\#*\#
+*emacs-elixir-format.exs
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+.org-id-locations
+*_archive
+# flymake-mode
+*_flymake.*
+/eshell/history
+/eshell/lastdir
+/elpa/
+*.rel
+/auto/
+.cask/
+dist/
+flycheck_*.el
+/server/
+.projectile
+.dir-locals.el
+/network-security.data
