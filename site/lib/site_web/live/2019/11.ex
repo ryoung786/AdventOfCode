@@ -6,17 +6,12 @@ defmodule SiteWeb.Day201911Live do
   @impl true
   def mount(_params, _session, socket) do
     if socket.connected? do
-      program = input() |> Aoc2019.Util.to_intcode_program()
-      robot = program |> create_robot() |> run_robot()
-      robot2 = program |> create_robot()
-      robot2 = %{robot2 | panels: %{{0, 0} => 1}} |> run_robot()
-
-      {:ok,
-       assign(socket, robot: robot, path: svg_path(robot), robot2: robot2, path2: svg_path(robot2))}
-    else
-      blank_robot = %Aoc2019.Days.D_11.Robot{}
-      {:ok, assign(socket, robot: blank_robot, path: "", robot2: blank_robot, path2: "")}
+      lv_pid = self()
+      Task.start_link(fn -> send(lv_pid, {:solved, solve()}) end)
     end
+
+    blank_robot = %Aoc2019.Days.D_11.Robot{}
+    {:ok, assign(socket, robot: blank_robot, path: "", robot2: blank_robot, path2: "")}
   end
 
   @impl true
@@ -33,11 +28,13 @@ defmodule SiteWeb.Day201911Live do
         <% end %>
       </g>
 
-      <circle r="3" fill="blue">
-        <animateMotion dur="10s"
-                       fill="freeze"
-                       path="<%= @path %>" />
-      </circle>
+      <%= if @path != "" do %>
+        <circle r="3" fill="blue">
+          <animateMotion dur="10s"
+                         fill="freeze"
+                         path="<%= @path %>" />
+        </circle>
+      <% end %>
     </svg>
 
 
@@ -52,13 +49,22 @@ defmodule SiteWeb.Day201911Live do
         <% end %>
       </g>
 
-      <circle r="1" fill="blue">
-        <animateMotion dur="10s"
-                       fill="freeze"
-                       path="<%= @path2 %>" />
-      </circle>
+
+      <%= if @path2 != "" do %>
+        <circle r="1" fill="blue">
+          <animateMotion dur="10s"
+                         fill="freeze"
+                         path="<%= @path2 %>" />
+        </circle>
+      <% end %>
     </svg>
     """
+  end
+
+  @impl true
+  def handle_info({:solved, {robot1, robot2}}, socket) do
+    {:noreply,
+     assign(socket, robot: robot1, path: svg_path(robot1), robot2: robot2, path2: svg_path(robot2))}
   end
 
   def svg_path(%{path: hist}) do
@@ -68,5 +74,13 @@ defmodule SiteWeb.Day201911Live do
       |> Enum.join(" ")
 
     "M0 0 " <> str
+  end
+
+  defp solve() do
+    program = input() |> Aoc2019.Util.to_intcode_program()
+    robot1 = program |> create_robot() |> run_robot()
+    robot2 = program |> create_robot()
+    robot2 = %{robot2 | panels: %{{0, 0} => 1}} |> run_robot()
+    {robot1, robot2}
   end
 end
