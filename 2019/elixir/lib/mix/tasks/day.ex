@@ -20,5 +20,5 @@ defmodule Mix.Tasks.Day do
   end
 
   def get_module(day),
-    do: String.to_existing_atom("Elixir.Days.D_#{String.pad_leading(day, 2, "0")}")
+    do: String.to_existing_atom("Elixir.Aoc2019.Days.D_#{String.pad_leading(day, 2, "0")}")
 end

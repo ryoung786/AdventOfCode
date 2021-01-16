@@ -2,7 +2,7 @@ defmodule Aoc2019.Days.D_11 do
   use Aoc2019.Days.Base
 
   defmodule Robot do
-    defstruct dir: :up, panels: %{}, xy: {0, 0}, vm: nil, intcode_state: nil
+    defstruct dir: :up, panels: %{}, xy: {0, 0}, vm: nil, intcode_state: nil, path: []
   end
 
   @impl true
@@ -18,7 +18,7 @@ defmodule Aoc2019.Days.D_11 do
     %Robot{vm: vm, intcode_state: Intcode.get_state(vm)}
   end
 
-  def run_robot(%{intcode_state: %{status: :halted}} = robot), do: robot.panels
+  def run_robot(%{intcode_state: %{status: :halted}} = robot), do: robot
 
   def run_robot(%{vm: vm} = robot) do
     input_val = Map.get(robot.panels, robot.xy, 0)
@@ -35,6 +35,7 @@ defmodule Aoc2019.Days.D_11 do
     |> paint_panel(paint_color)
     |> turn(turn_dir)
     |> move()
+    |> add_to_path()
     |> run_robot()
   end
 
@@ -59,5 +60,7 @@ defmodule Aoc2019.Days.D_11 do
   def move(%{xy: {x, y}, dir: :left} = robot), do: %{robot | xy: {x - 1, y}}
   def move(%{xy: {x, y}, dir: :right} = robot), do: %{robot | xy: {x + 1, y}}
 
-  def count_painted_panels(panels), do: panels |> Enum.count()
+  def add_to_path(%{xy: {x, y}, path: path} = robot), do: %{robot | path: [{x, y} | path]}
+
+  def count_painted_panels(%{panels: panels}), do: panels |> Enum.count()
 end
