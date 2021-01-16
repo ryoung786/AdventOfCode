@@ -24,6 +24,11 @@
   .clip {
     stroke-dashoffset: 10731;
     stroke-dasharray: 10731;
-    animation: draw_wire 10s linear infinite;
+    animation: draw_wire 10s linear forwards;
+  }
+  .clip2 {
+    stroke-dashoffset: 249;
+    stroke-dasharray: 249;
+    animation: draw_wire 10s linear forwards;
   }
 }
