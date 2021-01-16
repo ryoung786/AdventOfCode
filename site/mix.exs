@@ -45,6 +45,7 @@ defmodule Site.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:aoc2019, github: "ryoung786/AdventOfCode", sparse: "2019/elixir"},
+      # {:aoc2019, path: "../2019/elixir", only: :dev},
       {:aoc2020, github: "ryoung786/AdventOfCode", sparse: "2020"}
     ]
   end

@@ -18,3 +18,12 @@
     to{ stroke-dashoffset: 0; }
   }
 }
+
+.y2019_11 {
+  background: black;
+  .clip {
+    stroke-dashoffset: 10731;
+    stroke-dasharray: 10731;
+    animation: draw_wire 10s linear infinite;
+  }
+}
