@@ -55,8 +55,8 @@ defmodule Aoc2019.Days.D_11 do
   def turn(%{dir: :left} = robot, 1), do: %{robot | dir: :up}
   def turn(%{dir: :right} = robot, 1), do: %{robot | dir: :down}
 
-  def move(%{xy: {x, y}, dir: :up} = robot), do: %{robot | xy: {x, y + 1}}
-  def move(%{xy: {x, y}, dir: :down} = robot), do: %{robot | xy: {x, y - 1}}
+  def move(%{xy: {x, y}, dir: :up} = robot), do: %{robot | xy: {x, y - 1}}
+  def move(%{xy: {x, y}, dir: :down} = robot), do: %{robot | xy: {x, y + 1}}
   def move(%{xy: {x, y}, dir: :left} = robot), do: %{robot | xy: {x - 1, y}}
   def move(%{xy: {x, y}, dir: :right} = robot), do: %{robot | xy: {x + 1, y}}
 
