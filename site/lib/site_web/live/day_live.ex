@@ -2,7 +2,11 @@ defmodule SiteWeb.DayLive do
   use SiteWeb, :live_view
   require Logger
 
-  @supplemental_views %{"2020_11" => SiteWeb.Day202011Live, "2020_20" => SiteWeb.Day202020Live}
+  @supplemental_views %{
+    "2020_11" => SiteWeb.Day202011Live,
+    "2020_20" => SiteWeb.Day202020Live,
+    "2019_03" => SiteWeb.Day201903Live
+  }
 
   @impl true
   def mount(%{"year" => year, "day" => day}, _session, socket) do
