@@ -45,7 +45,12 @@ defmodule Aoc2019.Days.D_13 do
   end
 
   def get_score(%{output: output}) do
-    output |> chunk_every(3) |> find_value(fn [n, 0, -1] -> n end)
+    output
+    |> Enum.chunk_every(3)
+    |> Enum.find_value(fn
+      [score, 0, -1] -> score
+      [_tile, _y, _x] -> false
+    end)
   end
 
   def joystick_input(%{output: output}, last_joystick_x) do

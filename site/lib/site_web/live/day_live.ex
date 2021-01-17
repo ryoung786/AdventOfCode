@@ -6,7 +6,8 @@ defmodule SiteWeb.DayLive do
     "2020_11" => SiteWeb.Day202011Live,
     "2020_20" => SiteWeb.Day202020Live,
     "2019_03" => SiteWeb.Day201903Live,
-    "2019_11" => SiteWeb.Day201911Live
+    "2019_11" => SiteWeb.Day201911Live,
+    "2019_13" => SiteWeb.Day201913Live
   }
 
   @impl true
