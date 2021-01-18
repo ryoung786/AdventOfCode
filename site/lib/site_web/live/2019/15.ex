@@ -5,7 +5,8 @@ defmodule SiteWeb.Day201915Live do
   import Astar
   require Logger
 
-  @tick 5
+  @tick 20
+  @tick_gas 60
 
   @impl true
   def mount(_params, _session, socket) do
@@ -17,7 +18,10 @@ defmodule SiteWeb.Day201915Live do
         map: %{},
         move_resp: nil,
         o2: nil,
-        astar_path: []
+        astar_path: [],
+        gas: MapSet.new(),
+        edge_of_gas: [],
+        gas_minutes: 0
       )
 
     socket = if socket.connected?, do: explore(socket), else: socket
@@ -28,7 +32,12 @@ defmodule SiteWeb.Day201915Live do
   def render(assigns) do
     ~L"""
      <div class="y2019_15">
-       <h3>Shortest path: <%= if @astar_path != [], do: Enum.count(@astar_path) %></h3>
+       <div class="answers">
+         <h3>Shortest path: <%= if @astar_path != [], do: Enum.count(@astar_path) %></h3>
+         <%= if @gas_minutes > 0 do %>
+           <h3>Minutes gas expanding: <%= @gas_minutes %></h3>
+         <% end %>
+       </div>
        <svg width="600" height="600" viewbox="-30 -30 60 60">
          <%= for {{x,y}, :wall} <- @map do %>
            <path class="wall" d="<%= "M#{x} #{y} L#{x} #{y}" %>" stroke="black" stroke-linecap="square" />
@@ -36,14 +45,20 @@ defmodule SiteWeb.Day201915Live do
 
          <% {x, y} = @xy %>
          <path class="robot" d="<%= "M#{x} #{y} L#{x} #{y}" %>" stroke="navy" stroke-linecap="square" />
+
+         <%= if @astar_path != [] do %>
+           <path d="<%= to_svg_path(@astar_path) %>" stroke="magenta" fill="none" stroke-linecap="square" />
+         <% end %>
+
+         <%= for {x,y} <- @gas do %>
+           <path class="gas" d="<%= "M#{x} #{y} L#{x} #{y}" %>" stroke="cyan" stroke-linecap="square" />
+         <% end %>
+
          <%= if @o2 != nil do %>
            <% {x, y} = @o2 %>
            <path class="o2" d="<%= "M#{x} #{y} L#{x} #{y}" %>" stroke="green" stroke-linecap="square" />
          <% end %>
 
-         <%= if @astar_path != [] do %>
-           <path d="<%= to_svg_path(@astar_path) %>" stroke="magenta" fill="none" stroke-linecap="square" />
-         <% end %>
          <path class="origin" d="M0 0 L0 0" stroke="brown" stroke-linecap="square" />
        </svg>
      </div>
@@ -60,7 +75,9 @@ defmodule SiteWeb.Day201915Live do
   @impl true
   def handle_info(:tick, %{assigns: %{move_resp: 2}} = socket) do
     Process.send_after(self(), :tick, @tick)
-    {:noreply, assign(socket, o2: socket.assigns.xy, move_resp: nil)}
+
+    {:noreply,
+     assign(socket, o2: socket.assigns.xy, move_resp: nil, edge_of_gas: [socket.assigns.xy])}
   end
 
   @impl true
@@ -93,7 +110,36 @@ defmodule SiteWeb.Day201915Live do
     end
 
     path = astar({nbrs, fn _, _ -> 1 end, &heuristic/2}, o2, {0, 0})
+    Process.send_after(self(), :expand_gas, 0)
     {:noreply, assign(socket, astar_path: path)}
+  end
+
+  @impl true
+  def handle_info(:expand_gas, %{assigns: %{gas: gas, edge_of_gas: edges}} = socket) do
+    edges = get_neighbors_not_filled_with_gas(edges, gas, socket.assigns.map)
+    gas = MapSet.union(gas, MapSet.new(edges))
+
+    minutes =
+      if edges != [] do
+        Process.send_after(self(), :expand_gas, @tick_gas)
+        socket.assigns.gas_minutes + 1
+      else
+        socket.assigns.gas_minutes
+      end
+
+    {:noreply, assign(socket, gas_minutes: minutes, gas: gas, edge_of_gas: edges)}
+  end
+
+  defp get_neighbors_not_filled_with_gas(edges, gas, map) do
+    edges
+    |> Enum.flat_map(&non_wall_neighbors(&1, map))
+    |> Enum.reject(fn xy -> xy in gas end)
+  end
+
+  defp non_wall_neighbors({x, y}, map) do
+    [{0, 1}, {0, -1}, {1, 0}, {-1, 0}]
+    |> Enum.map(fn {dx, dy} -> {x + dx, y + dy} end)
+    |> Enum.reject(fn xy -> Map.get(map, xy) == :wall end)
   end
 
   defp heuristic({x, y}, {bx, by}),
