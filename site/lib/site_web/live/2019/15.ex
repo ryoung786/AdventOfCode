@@ -26,9 +26,6 @@ defmodule SiteWeb.Day201915Live do
 
   @impl true
   def render(assigns) do
-    # <rect class="wall" x="<%= x %>" y="<%= y %>" width="1" height="1" fill="black" />
-    # <rect class="robot" x="<%= x %>" y="<%= y %>" width="1" height="1" fill="navy" />
-    # <rect class="o2" x="<%= x %>" y="<%= y %>" width="1" height="1" fill="green" />
     ~L"""
      <div class="y2019_15">
        <h3>Shortest path: <%= if @astar_path != [], do: Enum.count(@astar_path) %></h3>
@@ -40,6 +37,7 @@ defmodule SiteWeb.Day201915Live do
          <% {x, y} = @xy %>
          <path class="robot" d="<%= "M#{x} #{y} L#{x} #{y}" %>" stroke="navy" stroke-linecap="square" />
          <%= if @o2 != nil do %>
+           <% {x, y} = @o2 %>
            <path class="o2" d="<%= "M#{x} #{y} L#{x} #{y}" %>" stroke="green" stroke-linecap="square" />
          <% end %>
 
@@ -52,10 +50,17 @@ defmodule SiteWeb.Day201915Live do
     """
   end
 
+  # explore until the robot has found the o2 and has reached the origin again
+  @impl true
+  def handle_info(:tick, %{assigns: %{xy: {0, 0}, o2: o2}} = socket) when o2 != nil do
+    Process.send_after(self(), :astar, 0)
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_info(:tick, %{assigns: %{move_resp: 2}} = socket) do
-    Process.send_after(self(), :astar, 0)
-    {:noreply, assign(socket, o2: socket.assigns.xy)}
+    Process.send_after(self(), :tick, @tick)
+    {:noreply, assign(socket, o2: socket.assigns.xy, move_resp: nil)}
   end
 
   @impl true
@@ -70,7 +75,13 @@ defmodule SiteWeb.Day201915Live do
 
     Process.send_after(self(), :tick, @tick)
 
-    {:noreply, assign(socket, xy: xy, dir: dir, map: map, move_resp: move_resp)}
+    {:noreply,
+     assign(socket,
+       xy: xy,
+       dir: dir,
+       map: map,
+       move_resp: move_resp
+     )}
   end
 
   @impl true

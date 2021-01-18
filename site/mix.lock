@@ -1,6 +1,6 @@
 %{
-  "aoc2019": {:git, "https://github.com/ryoung786/AdventOfCode.git", "e7e41f77c09fcdf1f5d4c044cd933c36c313d498", [sparse: "2019/elixir"]},
-  "aoc2020": {:git, "https://github.com/ryoung786/AdventOfCode.git", "e7e41f77c09fcdf1f5d4c044cd933c36c313d498", [sparse: "2020"]},
+  "aoc2019": {:git, "https://github.com/ryoung786/AdventOfCode.git", "23ae105343da076f1fc4b3791a72de0eee2542df", [sparse: "2019/elixir"]},
+  "aoc2020": {:git, "https://github.com/ryoung786/AdventOfCode.git", "23ae105343da076f1fc4b3791a72de0eee2542df", [sparse: "2020"]},
   "combination": {:hex, :combination, "0.0.3", "746aedca63d833293ec6e835aa1f34974868829b1486b1e1cb0685f0b2ae1f41", [:mix], [], "hexpm", "72b099f463df42ef7dc6371d250c7070b57b6c5902853f69deb894f79eda18ca"},
   "cowboy": {:hex, :cowboy, "2.8.0", "f3dc62e35797ecd9ac1b50db74611193c29815401e53bac9a5c0577bd7bc667d", [:rebar3], [{:cowlib, "~> 2.9.1", [hex: :cowlib, repo: "hexpm", optional: false]}, {:ranch, "~> 1.7.1", [hex: :ranch, repo: "hexpm", optional: false]}], "hexpm", "4643e4fba74ac96d4d152c75803de6fad0b3fa5df354c71afdd6cbeeb15fac8a"},
   "cowboy_telemetry": {:hex, :cowboy_telemetry, "0.3.1", "ebd1a1d7aff97f27c66654e78ece187abdc646992714164380d8a041eda16754", [:rebar3], [{:cowboy, "~> 2.7", [hex: :cowboy, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "3a6efd3366130eab84ca372cbd4a7d3c3a97bdfcfb4911233b035d117063f0af"},
