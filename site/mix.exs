@@ -44,6 +44,7 @@ defmodule Site.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
+      {:eastar, "~> 0.5.1"},
       {:aoc2019, github: "ryoung786/AdventOfCode", sparse: "2019/elixir"},
       # {:aoc2019, path: "../2019/elixir"},
       {:aoc2020, github: "ryoung786/AdventOfCode", sparse: "2020"}
