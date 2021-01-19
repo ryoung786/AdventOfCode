@@ -38,7 +38,7 @@ defmodule SiteWeb.Day201915Live do
            <h3>Minutes gas expanding: <%= @gas_minutes %></h3>
          <% end %>
        </div>
-       <svg width="600" height="600" viewbox="-30 -30 60 60">
+       <svg width="600" height="600" viewbox="-22 -22 42 42">
          <%= for {{x,y}, :wall} <- @map do %>
            <path class="wall" d="<%= "M#{x} #{y} L#{x} #{y}" %>" stroke="black" stroke-linecap="square" />
          <% end %>
