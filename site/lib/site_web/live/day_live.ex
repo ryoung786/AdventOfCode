@@ -44,13 +44,16 @@ defmodule SiteWeb.DayLive do
   end
 
   defp answer_or_calculating({:ok, {label, val}}), do: "#{label} #{val}"
+  defp answer_or_calculating({:ok, val}), do: "#{val}"
   defp answer_or_calculating(_), do: "calculating"
 
   @impl true
   def render(assigns) do
+    id = String.to_atom("day#{assigns.day}")
+
     ~L"""
     <%= live_component(@socket, SiteWeb.AnswerComponent, assigns) %>
-    <%= if @supplemental_view != nil, do: live_render(@socket, @supplemental_view, id: String.to_atom("day#{assigns.day}")) %>
+    <%= if @supplemental_view != nil, do: live_render(@socket, @supplemental_view, id: id) %>
     """
   end
 
