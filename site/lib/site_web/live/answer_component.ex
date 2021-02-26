@@ -16,18 +16,20 @@ defmodule SiteWeb.AnswerComponent do
   end
 
   defp gh_path(day) do
-    gh_base = "https://github.com/ryoung786/AdventOfCode/blob/main/2020/lib/aoc/days/"
+    gh_base = "https://github.com/ryoung786/AdventOfCode/blob/main/2020/lib/days/"
+
+    day_str = String.pad_leading(day, 2, "0")
 
     if String.to_integer(day) in 1..25,
-      do: gh_base <> "d_#{String.pad_leading(day, 2, "0")}.ex",
+      do: gh_base <> "#{day_str}/d_#{day_str}.ex",
       else: "/"
   end
 
   defp official_site(day) do
-    gh_base = "https://adventofcode.com/2020/day/"
+    url_base = "https://adventofcode.com/2020/day/"
 
     if String.to_integer(day) in 1..25,
-      do: gh_base <> day,
+      do: url_base <> day,
       else: "/"
   end
 end
