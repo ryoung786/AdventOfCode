@@ -36,6 +36,7 @@ defmodule SiteWeb.DayLive do
 
     {:ok,
      assign(socket,
+       year: year,
        day: day,
        part_one: answer_or_calculating(p1),
        part_two: answer_or_calculating(p2),
