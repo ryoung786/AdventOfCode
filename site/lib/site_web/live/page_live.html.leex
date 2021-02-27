@@ -1,12 +1,17 @@
 <section class="phx-hero">
-  <h1>Advent of Code 2020</h1>
+  <h1>Advent of Code</h1>
   <p>A December tradition</p>
 </section>
 
-<section class="days">
+<ul class="year-selection">
+  <li class="<%= if @year == "2019", do: "active" %>"><%= live_patch "2019", to: "/2019" %></li>
+  <li class="<%= if @year == "2020", do: "active" %>"><%= live_patch "2020", to: "/2020" %></li>
+</ul>
+
+<section class="days year-<%= @year %>">
   <ul>
     <%= for day <- 1..25 do %>
-      <li><%= live_redirect "#{day}", to: Routes.day_path(@socket, :index, 2020, day) %></li>
+      <li><%= live_redirect "#{day}", to: Routes.day_path(@socket, :index, @year, day) %></li>
     <% end %>
   </ul>
 </section>

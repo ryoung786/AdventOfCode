@@ -14,6 +14,10 @@ defmodule SiteWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :valid_year do
+    plug(:ensure_valid_year)
+  end
+
   pipeline :valid_day do
     plug(:ensure_valid_day)
   end
@@ -23,9 +27,14 @@ defmodule SiteWeb.Router do
 
     live "/", PageLive, :index
 
-    scope "/:year/:day" do
-      pipe_through :valid_day
-      live "/", DayLive, :index
+    scope "/:year" do
+      pipe_through :valid_year
+      live "/", PageLive, :index
+
+      scope "/:day" do
+        pipe_through :valid_day
+        live "/", DayLive, :index
+      end
     end
   end
 
@@ -38,18 +47,21 @@ defmodule SiteWeb.Router do
     end
   end
 
-  defp ensure_valid_day(conn, _opts) do
+  defp ensure_valid_year(conn, _opts) do
     year = conn.path_params["year"] |> String.to_integer()
-    day = conn.path_params["day"] |> String.to_integer()
+    if year in 2018..2020, do: conn, else: error404(conn)
+  end
 
-    if day in 1..25 and year in 2018..2020 do
-      conn
-    else
-      conn
-      |> put_status(404)
-      |> put_view(Aoc2020Web.ErrorView)
-      |> render(:"404")
-      |> halt()
-    end
+  defp ensure_valid_day(conn, _opts) do
+    day = conn.path_params["day"] |> String.to_integer()
+    if day in 1..25, do: conn, else: error404(conn)
+  end
+
+  defp error404(conn) do
+    conn
+    |> put_status(404)
+    |> put_view(SiteWeb.ErrorView)
+    |> render(:"404")
+    |> halt()
   end
 end
