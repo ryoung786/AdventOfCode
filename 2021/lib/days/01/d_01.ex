@@ -17,10 +17,8 @@ defmodule Aoc2021.Days.D_01 do
 
   def num_increasing(arr) do
     arr
-    |> Enum.reduce({0, 999_999_999}, fn depth, {count, prev_depth} ->
-      if depth > prev_depth, do: {count + 1, depth}, else: {count, depth}
-    end)
-    |> elem(0)
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.count(fn [prev_depth, next_depth] -> next_depth > prev_depth end)
   end
 
   def num_increasing_sweep(arr) do
@@ -28,27 +26,5 @@ defmodule Aoc2021.Days.D_01 do
     |> Enum.chunk_every(3, 1, :discard)
     |> Enum.map(&Enum.sum/1)
     |> num_increasing()
-  end
-
-  def pair_that_sums_to_target(arr, target) do
-    lookup = Map.new(arr, fn x -> {x, true} end)
-
-    case Enum.find(arr, fn x -> lookup[target - x] end) do
-      nil -> nil
-      found -> {found, target - found}
-    end
-  end
-
-  def trio_that_sums_to_target(arr, target) do
-    {found, i} =
-      arr
-      |> Enum.with_index()
-      |> Enum.find(fn {x, i} ->
-        Enum.slice(arr, i..-1)
-        |> pair_that_sums_to_target(target - x)
-      end)
-
-    {a, b} = Enum.slice(arr, i..-1) |> pair_that_sums_to_target(target - found)
-    {found, a, b}
   end
 end
