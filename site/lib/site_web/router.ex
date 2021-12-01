@@ -49,7 +49,7 @@ defmodule SiteWeb.Router do
 
   defp ensure_valid_year(conn, _opts) do
     year = conn.path_params["year"] |> String.to_integer()
-    if year in 2018..2020, do: conn, else: error404(conn)
+    if year in 2018..2021, do: conn, else: error404(conn)
   end
 
   defp ensure_valid_day(conn, _opts) do

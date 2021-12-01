@@ -5,7 +5,7 @@ defmodule Site.MixProject do
     [
       app: :site,
       version: "0.1.0",
-      elixir: "~> 1.11",
+      elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -47,7 +47,9 @@ defmodule Site.MixProject do
       {:eastar, "~> 0.5.1"},
       {:aoc2019, github: "ryoung786/AdventOfCode", sparse: "2019/elixir"},
       # {:aoc2019, path: "../2019/elixir"},
-      {:aoc2020, github: "ryoung786/AdventOfCode", sparse: "2020"}
+      {:aoc2020, github: "ryoung786/AdventOfCode", sparse: "2020"},
+      # {:aoc2021, path: "../2021"}
+      {:aoc2021, github: "ryoung786/AdventOfCode", sparse: "2021"}
     ]
   end
 

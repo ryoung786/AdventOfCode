@@ -37,6 +37,7 @@ header {
   li { margin: 0; }
 }
 
+.days.year-2021 li:first-child { grid-column-start: 4; }
 .days.year-2020 li:first-child { grid-column-start: 3; }
 .days.year-2019 li:first-child { grid-column-start: 7; }
 
