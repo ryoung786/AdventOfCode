@@ -55,7 +55,6 @@ defmodule AocWeb.DayLive do
   @impl true
   def render(assigns) do
     id = String.to_atom("day#{assigns.day}")
-    IO.inspect(assigns.supplemental_view, label: "[xxx] ")
 
     ~H"""
     <Components.answer {assigns} />

@@ -21,7 +21,6 @@ defmodule Aoc.Year2019.Day15 do
   def find_oxygen(_vm, xy, _dir, map, 2), do: {xy, map}
 
   def find_oxygen(vm, xy, [input | _] = dir, map, _move_resp) do
-    IO.inspect({xy, input}, label: "[robot, dir] ")
     Intcode.input(vm, input)
 
     %{output: [move_resp | _]} = Intcode.run_sync(vm)
