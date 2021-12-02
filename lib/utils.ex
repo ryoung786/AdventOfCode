@@ -5,7 +5,12 @@ defmodule Aoc.Utils do
 
   def get_module(year, day) do
     day = String.pad_leading("#{day}", 2, "0")
-    String.to_existing_atom("Elixir.Aoc.Year#{year}.Day#{day}")
+
+    try do
+      String.to_existing_atom("Elixir.Aoc.Year#{year}.Day#{day}")
+    rescue
+      ArgumentError -> Aoc.DayBase
+    end
   end
 
   def get_year_and_day(module) when is_atom(module) do
