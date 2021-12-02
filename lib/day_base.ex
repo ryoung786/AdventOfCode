@@ -1,8 +1,8 @@
 defmodule Aoc.DayBase do
   require Logger
 
-  @callback part_one(String.t()) :: {String.t(), any()}
-  @callback part_two(String.t()) :: {String.t(), any()}
+  @callback part_one(String.t()) :: any()
+  @callback part_two(String.t()) :: any()
 
   defmacro __using__([]) do
     quote do
@@ -30,6 +30,6 @@ defmodule Aoc.DayBase do
 
   def part_one(), do: part_one(nil)
   def part_two(), do: part_two(nil)
-  def part_one(_input), do: {"Part one:", "TBD"}
-  def part_two(_input), do: {"Part two:", "TBD"}
+  def part_one(_input), do: "TBD"
+  def part_two(_input), do: "TBD"
 end
