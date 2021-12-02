@@ -1,0 +1,45 @@
+<div class="day20">
+  <%= if @solved_puzzle != nil do %>
+    <h1>solved:</h1>
+    <% {w, h} = dim(@solved_puzzle) %>
+    <svg width="500" height="500" viewbox={"0 0 #{w*10 + 10} #{h*10 + 10}"}>
+      <%= for y <- 0..h, x <- 0..w do %>
+        <% tile = @solved_puzzle[{x,y}] %>
+
+        <% tile = elem(tile, 1) %>
+        <% dx = x*11 %>
+        <% dy = y*11 %>
+
+        <% class = %{"." => "empty", "#" => "wave", "O" => "monster"} %>
+        <% h = Enum.count(@tile) %>
+        <% w = @tile |> List.first() |> Enum.count() %>
+
+        <svg width={ w } height={ h } x={dx} y={dy}>
+          <rect class="empty1" x="0" y="0" width={w} height={h}></rect>
+          <%= for {row, y} <- @tile |> Enum.with_index() do %>
+            <%= for {cell, x} <- row |> Enum.with_index() do %>
+              <%= if cell != "." do %>
+                <rect class={class[cell]} x={x} y={y} width="1" height="1"></rect>
+              <% end %>
+            <% end %>
+          <% end %>
+        </svg>
+
+
+      <% end %>
+    </svg>
+  <% end %>
+  <%= if @final_puzzle != nil do %>
+    <h1>final:</h1>
+    <% {w, h} = dim(@final_puzzle) %>
+    <% class = %{"." => "empty", "#" => "wave2", "O" => "monster"} %>
+    <svg width="500" height="500" viewbox={"0 0 #{w} #{h}"}>
+      <rect class="empty" x="0" y="0" width={w} height={h}></rect>
+      <%= for {{x,y}, cell} <- @final_puzzle do %>
+        <%= if cell != "." do %>
+          <rect class={class[cell]} x={x} y={y} width="1" height="1"></rect>
+        <% end %>
+      <% end %>
+    </svg>
+  <% end %>
+</div>

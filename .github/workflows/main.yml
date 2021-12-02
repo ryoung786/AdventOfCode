@@ -11,81 +11,12 @@ defaults:
     shell: bash
 
 jobs:
-  test-site:
+  test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: site
     strategy:
       matrix:
-        otp: [22.3]
-        elixir: [1.11.2]
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1
-        with:
-          otp-version: ${{ matrix.otp }}
-          elixir-version: ${{ matrix.elixir }}
-
-      - uses: actions/cache@v1
-        id: deps-cache
-        with:
-          path: deps
-          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-
-      - uses: actions/cache@v1
-        id: build-cache
-        with:
-          path: _build
-          key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-
-      - run: mix deps.get
-      - run: mix format --check-formatted
-      - run: mix test
-
-  test-2019:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: 2019/elixir
-    strategy:
-      matrix:
-        otp: [22.3]
-        elixir: [1.11.2]
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1
-        with:
-          otp-version: ${{ matrix.otp }}
-          elixir-version: ${{ matrix.elixir }}
-
-      - uses: actions/cache@v1
-        id: deps-cache
-        with:
-          path: deps
-          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-
-      - uses: actions/cache@v1
-        id: build-cache
-        with:
-          path: _build
-          key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-
-      - run: mix deps.get
-      - run: mix format --check-formatted
-      - run: mix test
-
-  test-2020:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: 2020
-    strategy:
-      matrix:
-        otp: [22.3]
-        elixir: [1.11.2]
+        otp: [24.0.3]
+        elixir: [1.12.3]
 
     steps:
       - uses: actions/checkout@v2
@@ -111,7 +42,7 @@ jobs:
       - run: mix test
 
   deploy:
-    needs: [test-site, test-2019, test-2020] # Will only run if the test job succeeds
+    needs: [test] # Will only run if the test job succeeds
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     runs-on: ubuntu-latest

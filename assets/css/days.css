@@ -1,0 +1,53 @@
+ /* 2019 Day 3 */
+.y2019_03 path {
+  stroke-width: 25;
+  stroke-linecap: "square";
+  animation: draw_wire 10s linear infinite;
+}
+
+.y2019_03 path.wire_a {
+  stroke-dasharray: 151876;
+  stroke-dashoffset: 151876;
+}
+.y2019_03 path.wire_b {
+  stroke-dasharray: 156853;
+  stroke-dashoffset: 156853;
+}
+@keyframes draw_wire {
+  to{ stroke-dashoffset: 0; }
+}
+
+ /* 2019 Day 11 */
+.y2019_11 {
+  background: black;
+}
+.y2019_11 .clip {
+  stroke-dashoffset: 10731;
+  stroke-dasharray: 10731;
+  animation: draw_wire 10s linear forwards;
+}
+.y2019_11 .clip2 {
+  stroke-dashoffset: 249;
+  stroke-dasharray: 249;
+  animation: draw_wire 10s linear forwards;
+}
+
+ /* 2019 Day 13 */
+.y2019_13 h3 { display: inline-block; }
+
+/* 2020 Day 11 */
+.day11 {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+.day11 .part img {
+  width: 300px;
+}
+
+/* 2020 Day 20 */
+.day20 .empty1 { fill: darkseagreen; }
+.day20 .empty { fill: lightblue; }
+.day20 .wave { fill: blue; }
+.day20 .wave2 { fill: floralwhite; }
+.day20 .monster { fill: indigo; }
