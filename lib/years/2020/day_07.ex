@@ -5,13 +5,13 @@ defmodule Aoc.Year2020.Day07 do
   @impl true
   def part_one(str) do
     m = str |> parse_input_str() |> contained_by_map()
-    {"Part one:", f("shiny gold", m) |> Enum.uniq() |> Enum.count()}
+    f("shiny gold", m) |> Enum.uniq() |> Enum.count()
   end
 
   @impl true
   def part_two(str) do
     m = str |> parse_input_str() |> contains_map()
-    {"Part two:", g("shiny gold", m)}
+    g("shiny gold", m)
   end
 
   def contains_map(lines), do: lines |> Enum.map(&parse_line/1) |> Enum.into(%{})
