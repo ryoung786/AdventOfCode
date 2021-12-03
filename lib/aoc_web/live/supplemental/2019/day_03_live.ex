@@ -11,10 +11,10 @@ defmodule AocWeb.Supplemental.Year2019.Day03Live do
 
   @impl true
   def render(assigns) do
-    ~L"""
+    ~H"""
     <svg class="y2019_03" width="588" height="1000" viewbox="-1500 -7100 10000 17000">
-      <%= render_wire(@wire_a, "red", "wire_a") %>
-      <%= render_wire(@wire_b, "blue", "wire_b") %>
+      <%= render_wire(assigns, @wire_a, "red", "wire_a") %>
+      <%= render_wire(assigns, @wire_b, "blue", "wire_b") %>
     </svg>
     """
   end
@@ -31,7 +31,9 @@ defmodule AocWeb.Supplemental.Year2019.Day03Live do
     |> Enum.join(" ")
   end
 
-  def render_wire(wire, color, class) do
-    ~e{<path class="<%= class %>" d="<%= to_svg(wire) %>" fill="transparent" stroke="<%= color %>" />}
+  def render_wire(assigns, wire, color, class) do
+    ~H"""
+      <path class={class} d={to_svg(wire)} fill="transparent" stroke={color} />
+    """
   end
 end
