@@ -11,7 +11,9 @@ defmodule Aoc.Year2021.Day04 do
 
   def part_two(input) do
     input
-    |> Input.to_str_list()
+    |> parse_instructions_and_boards()
+    |> play_game(:return_losing_board)
+    |> calculate_score()
   end
 
   def parse_instructions_and_boards(input) do
@@ -30,6 +32,21 @@ defmodule Aoc.Year2021.Day04 do
       case Enum.find(boards, &Board.is_bingo?/1) do
         nil -> {:cont, boards}
         winning_board -> {:halt, {winning_board, instruction}}
+      end
+    end)
+  end
+
+  def play_game({instructions, boards}, :return_losing_board) do
+    instructions
+    |> Enum.reduce_while(boards, fn instruction, boards ->
+      boards = boards |> Enum.map(&Board.mark(&1, instruction))
+      [losing_board | _] = boards
+
+      boards = boards |> Enum.reject(&Board.is_bingo?/1)
+
+      case boards do
+        [] -> {:halt, {losing_board, instruction}}
+        _ -> {:cont, boards}
       end
     end)
   end

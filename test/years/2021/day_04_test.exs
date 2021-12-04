@@ -33,8 +33,8 @@ defmodule Aoc.Year2021.Day04Test do
       assert part_one(input) == 4512
     end
 
-    # test "part two", %{input: input} do
-    #   assert part_two(input) == 230
-    # end
+    test "part two", %{input: input} do
+      assert part_two(input) == 1924
+    end
   end
 end
