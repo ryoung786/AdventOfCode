@@ -55,53 +55,30 @@ defmodule Aoc.Year2021.Day04 do
   end
 
   defmodule Board do
+    defstruct bingos: []
+
     def new(input_str) do
       rows = String.split(input_str, "\n", trim: true)
 
-      Enum.map(rows, fn row ->
-        row
-        |> String.split()
-        |> Enum.map(&String.to_integer/1)
-        |> Enum.map(fn val -> {val, false} end)
-      end)
-    end
+      board =
+        Enum.map(rows, fn row ->
+          row
+          |> String.split()
+          |> Enum.map(&String.to_integer/1)
+        end)
 
-    def mark(board, number) do
-      board |> Enum.map(&mark_cells_in_row(&1, number))
-    end
-
-    defp mark_cells_in_row(row, number) do
-      Enum.map(row, fn
-        {^number, _} -> {number, true}
-        {val, marked} -> {val, marked}
-      end)
-    end
-
-    def is_bingo?(board) do
-      is_row_bingo?(board) or is_row_bingo?(transpose(board))
+      bingos = Enum.map(board, &MapSet.new/1) ++ Enum.map(transpose(board), &MapSet.new/1)
+      %Board{bingos: bingos}
     end
 
     defp transpose(m), do: m |> Enum.zip() |> Enum.map(fn tup -> Tuple.to_list(tup) end)
 
-    defp is_row_bingo?(board) do
-      Enum.any?(board, fn row ->
-        row |> Enum.all?(fn {_, marked} -> marked end)
-      end)
-    end
+    def mark(%Board{} = board, number),
+      do: %Board{bingos: Enum.map(board.bingos, &MapSet.delete(&1, number))}
 
-    def sum_unmarked(board) do
-      board
-      |> Enum.map(&sum_unmarked_row/1)
-      |> Enum.sum()
-    end
+    def is_bingo?(%Board{bingos: bingos}), do: Enum.any?(bingos, &Enum.empty?/1)
 
-    defp sum_unmarked_row(row) do
-      row
-      |> Enum.map(fn
-        {val, false} -> val
-        {_val, true} -> 0
-      end)
-      |> Enum.sum()
-    end
+    def sum_unmarked(%Board{bingos: bingos}),
+      do: bingos |> Enum.map(&Enum.sum/1) |> Enum.sum() |> Kernel.div(2)
   end
 end
