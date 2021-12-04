@@ -10,7 +10,8 @@ defmodule Aoc.Year2021.Day03 do
       |> Enum.map_join(&most_common_digit(&1))
       |> base2to10()
 
-    epsilon = Bitwise.bxor(gamma, 0b111111111111)
+    len = String.split(input, "\n") |> List.first() |> String.length()
+    epsilon = Bitwise.bxor(gamma, Integer.pow(2, len) - 1)
 
     gamma * epsilon
   end
