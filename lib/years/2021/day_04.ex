@@ -17,10 +17,11 @@ defmodule Aoc.Year2021.Day04 do
   end
 
   def parse_instructions_and_boards(input) do
-    [instructions | boards] = input |> String.split("\n\n", trim: true)
+    [instructions_str | boards_str] = input |> String.split("\n\n", trim: true)
 
-    instructions = instructions |> String.split(",") |> Enum.map(&String.to_integer/1)
-    boards = Enum.map(boards, &Board.new/1)
+    instructions = instructions_str |> String.split(",") |> Enum.map(&String.to_integer/1)
+    boards = Enum.map(boards_str, &Board.new/1)
+
     {instructions, boards}
   end
 
@@ -42,11 +43,9 @@ defmodule Aoc.Year2021.Day04 do
       boards = boards |> Enum.map(&Board.mark(&1, instruction))
       [losing_board | _] = boards
 
-      boards = boards |> Enum.reject(&Board.is_bingo?/1)
-
-      case boards do
+      case Enum.reject(boards, &Board.is_bingo?/1) do
         [] -> {:halt, {losing_board, instruction}}
-        _ -> {:cont, boards}
+        remaining_boards -> {:cont, remaining_boards}
       end
     end)
   end
@@ -68,18 +67,18 @@ defmodule Aoc.Year2021.Day04 do
     end
 
     def mark(board, number) do
-      board
-      |> Enum.map(fn row ->
-        row
-        |> Enum.map(fn {val, marked} -> if val == number, do: {val, true}, else: {val, marked} end)
+      board |> Enum.map(&mark_cells_in_row(&1, number))
+    end
+
+    defp mark_cells_in_row(row, number) do
+      Enum.map(row, fn
+        {^number, _} -> {number, true}
+        {val, marked} -> {val, marked}
       end)
     end
 
     def is_bingo?(board) do
-      row_bingo = board |> is_row_bingo?()
-      column_bingo = board |> transpose() |> is_row_bingo?()
-
-      row_bingo || column_bingo
+      is_row_bingo?(board) or is_row_bingo?(transpose(board))
     end
 
     defp transpose(m), do: m |> Enum.zip() |> Enum.map(fn tup -> Tuple.to_list(tup) end)
@@ -92,11 +91,15 @@ defmodule Aoc.Year2021.Day04 do
 
     def sum_unmarked(board) do
       board
-      |> Enum.map(fn row ->
-        row
-        |> Enum.filter(fn {_, marked} -> marked == false end)
-        |> Enum.map(fn {val, false} -> val end)
-        |> Enum.sum()
+      |> Enum.map(&sum_unmarked_row/1)
+      |> Enum.sum()
+    end
+
+    defp sum_unmarked_row(row) do
+      row
+      |> Enum.map(fn
+        {val, false} -> val
+        {_val, true} -> 0
       end)
       |> Enum.sum()
     end
