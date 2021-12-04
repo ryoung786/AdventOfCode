@@ -8,7 +8,7 @@ defmodule Aoc.Year2021.Day03 do
       |> Enum.map(&String.graphemes/1)
       |> transpose()
       |> Enum.map_join(&most_common_digit(&1))
-      |> base2to10()
+      |> String.to_integer(2)
 
     len = String.split(input, "\n") |> List.first() |> String.length()
     epsilon = Bitwise.bxor(gamma, Integer.pow(2, len) - 1)
@@ -22,10 +22,9 @@ defmodule Aoc.Year2021.Day03 do
   end
 
   defp transpose(m), do: m |> Enum.zip() |> Enum.map(fn tup -> Tuple.to_list(tup) end)
-  defp base2to10(str), do: Integer.parse(str, 2) |> elem(0)
 
   defp rating(numbers, bit_criteria),
-    do: reduce_to_one_number(numbers, bit_criteria) |> base2to10()
+    do: reduce_to_one_number(numbers, bit_criteria) |> String.to_integer(2)
 
   defp reduce_to_one_number(numbers, bit_criteria) do
     0..999
