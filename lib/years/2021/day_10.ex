@@ -1,32 +1,30 @@
 defmodule Aoc.Year2021.Day10 do
   use Aoc.DayBase
 
-  @scores %{")" => 3, "]" => 57, "}" => 1197, ">" => 25137}
   @open ["(", "[", "{", "<"]
-  @pair %{")" => "(", "]" => "[", "}" => "{", ">" => "<"}
-  @auto_scores %{"(" => 1, "[" => 2, "{" => 3, "<" => 4}
+  @complementary %{")" => "(", "]" => "[", "}" => "{", ">" => "<"}
 
   def part_one(input) do
     input
     |> Input.to_str_list()
     |> Enum.map(&score_line/1)
+    |> Enum.filter(&is_corrupted/1)
+    |> Enum.map(fn {:corrupted, score} -> score end)
     |> Enum.sum()
   end
 
   def part_two(input) do
-    sorted =
-      input
-      |> Input.to_str_list()
-      |> Enum.reject(fn line -> score_line(line) > 0 end)
-      |> Enum.map(&score_autocomplete/1)
-      |> Enum.sort()
-
-    # calculate median score
-    idx = div(Enum.count(sorted) - 1, 2)
-    Enum.at(sorted, idx)
+    input
+    |> Input.to_str_list()
+    |> Enum.map(&score_line/1)
+    |> Enum.reject(&is_corrupted/1)
+    |> Enum.map(fn {:incomplete, score} -> score end)
+    |> median()
   end
 
   def score_line(line) do
+    scoring = %{")" => 3, "]" => 57, "}" => 1197, ">" => 25137}
+
     score =
       String.graphemes(line)
       |> Enum.reduce_while([], fn
@@ -34,27 +32,26 @@ defmodule Aoc.Year2021.Day10 do
           {:cont, [char | stack]}
 
         char, [] ->
-          {:halt, @scores[char]}
+          {:halt, scoring[char]}
 
         char, [a | stack] ->
-          if a == @pair[char],
+          if a == @complementary[char],
             do: {:cont, stack},
-            else: {:halt, @scores[char]}
+            else: {:halt, scoring[char]}
       end)
 
-    if is_integer(score), do: score, else: 0
+    if is_integer(score), do: {:corrupted, score}, else: {:incomplete, score_autocomplete(score)}
   end
 
-  def score_autocomplete(line) do
-    remaining =
-      String.graphemes(line)
-      |> Enum.reduce([], fn
-        char, stack when char in @open -> [char | stack]
-        _char, [_ | stack] -> stack
-      end)
+  def score_autocomplete(remaining) do
+    score = %{"(" => 1, "[" => 2, "{" => 3, "<" => 4}
+    Enum.reduce(remaining, 0, fn char, total -> total * 5 + score[char] end)
+  end
 
-    remaining
-    |> tap(fn lst -> IO.inspect(Enum.join(lst), label: "reversed ") end)
-    |> Enum.reduce(0, fn char, total_score -> total_score * 5 + @auto_scores[char] end)
+  def is_corrupted({status, _score}), do: status == :corrupted
+
+  def median(scores) do
+    middle_index = div(Enum.count(scores), 2)
+    scores |> Enum.sort() |> Enum.at(middle_index)
   end
 end
