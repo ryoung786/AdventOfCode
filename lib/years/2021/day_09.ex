@@ -1,43 +1,6 @@
 defmodule Aoc.Year2021.Day09 do
   use Aoc.DayBase
-  alias Aoc.Year2021.Day09.Matrix
-
-  defmodule Matrix do
-    alias __MODULE__, as: Matrix
-    defstruct m: [], w: 0, h: 0
-
-    def from_string(str) do
-      m =
-        str
-        |> String.split("\n", trim: true)
-        |> Enum.map(fn line ->
-          line |> String.split("", trim: true) |> Enum.map(&String.to_integer/1)
-        end)
-
-      h = Enum.count(m)
-      w = if h == 0, do: 0, else: Enum.count(hd(m))
-      %Matrix{m: m, w: w, h: h}
-    end
-
-    def at(%Matrix{} = m, {x, y}), do: at(m, x, y)
-
-    def at(%Matrix{m: m, w: w, h: h}, x, y) when x >= 0 and x < w and y >= 0 and y < h do
-      row = Enum.at(m, y)
-      Enum.at(row, x)
-    end
-
-    # out of bounds
-    def at(%Matrix{}, _x, _y), do: nil
-
-    def neighbors(%Matrix{} = m, {x, y}), do: neighbors(m, x, y)
-
-    def neighbors(%Matrix{w: w, h: h} = m, x, y) when x >= 0 and x < w and y >= 0 and y < h do
-      [up: {0, -1}, down: {0, 1}, left: {-1, 0}, right: {1, 0}]
-      |> Enum.map(fn {dir, {dx, dy}} -> {dir, at(m, x + dx, y + dy)} end)
-      |> Enum.reject(fn {_dir, val} -> is_nil(val) end)
-      |> Enum.into(%{})
-    end
-  end
+  alias Aoc.Utils.Matrix
 
   def part_one(input) do
     input
