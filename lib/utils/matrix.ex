@@ -80,11 +80,9 @@ defmodule Aoc.Utils.Matrix do
   end
 
   def filter(%Matrix{} = m, f) do
-    Enum.flat_map(0..(m.h - 1), fn y ->
-      Enum.reduce((m.w - 1)..0, [], fn x, row ->
-        val = Matrix.at(m, x, y)
-        if f.(val), do: [{{x, y}, val} | row], else: row
-      end)
+    m.m
+    |> Enum.flat_map(fn row ->
+      Enum.filter(row, fn val -> f.(val) end)
     end)
   end
 
