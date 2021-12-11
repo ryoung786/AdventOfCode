@@ -11,6 +11,7 @@ defmodule Aoc.Year2021.Day11 do
   def part_two(input) do
     input
     |> Matrix.from_string()
+    |> count_steps_until_synchronized()
   end
 
   def count_flashes(%Matrix{} = m, num_steps) do
@@ -23,35 +24,40 @@ defmodule Aoc.Year2021.Day11 do
     |> elem(0)
   end
 
-  def step(%Matrix{} = m) do
-    m
-    |> Matrix.map(&inc/3)
-    |> flash_cycle()
-    |> Matrix.map(fn
-      _, _, val when val > 9 -> 0
-      _, _, val -> val
+  def count_steps_until_synchronized(%Matrix{} = m) do
+    1..999_999_999
+    |> Enum.reduce_while(m, fn step_num, m ->
+      next = step(m)
+      if is_synchronized?(next), do: {:halt, step_num}, else: {:cont, next}
     end)
   end
 
-  def inc({x, y}, val), do: inc(x, y, val)
+  def is_synchronized?(%Matrix{} = m),
+    do: Matrix.count(m, fn _, _, val -> val == 0 end) == 100
+
+  def step(%Matrix{} = m) do
+    m
+    |> Matrix.map(&inc/3)
+    |> flash()
+    |> Matrix.map(fn _, _, val -> if val > 9, do: 0, else: val end)
+  end
+
   def inc(_x, _y, val), do: val + 1
 
-  def flash_cycle(%Matrix{} = m) do
-    flash_cycle(m, Matrix.filter(m, fn _x, _y, val -> val == 10 end))
+  def flash(%Matrix{} = m) do
+    flash(m, Matrix.filter(m, fn _x, _y, val -> val == 10 end))
   end
 
-  def flash_cycle(%Matrix{} = m, [] = _to_process) do
-    m
-  end
+  def flash(%Matrix{} = m, [] = _to_process), do: m
 
-  def flash_cycle(%Matrix{} = m, [{xy, _} | to_process]) do
+  def flash(%Matrix{} = m, [{xy, _} | to_process]) do
     neighbors =
       Matrix.all_neighbors(m, xy)
-      |> Map.map(fn {xy, val} -> inc(xy, val) end)
+      |> Map.map(fn {{x, y}, val} -> inc(x, y, val) end)
 
     new_flash = Enum.filter(neighbors, fn {_xy, val} -> val == 10 end)
 
-    flash_cycle(
+    flash(
       Matrix.put(m, neighbors),
       to_process ++ new_flash
     )
