@@ -37,15 +37,16 @@ defmodule Aoc.Year2021.Day11 do
 
   def step(%Matrix{} = m) do
     m
-    |> Matrix.map(&inc/3)
+    |> Matrix.map(&inc/1)
     |> flash()
-    |> Matrix.map(fn _, _, val -> if val > 9, do: 0, else: val end)
+    |> Matrix.map(fn val -> if val > 9, do: 0, else: val end)
   end
 
-  def inc(_x, _y, val), do: val + 1
+  def inc(val), do: val + 1
 
   def flash(%Matrix{} = m) do
-    flash(m, Matrix.filter(m, fn _x, _y, val -> val == 10 end))
+    queue = m |> Matrix.with_xy() |> Matrix.filter(fn {_xy, val} -> val == 10 end)
+    flash(m, queue)
   end
 
   def flash(%Matrix{} = m, [] = _to_process), do: m
@@ -53,7 +54,7 @@ defmodule Aoc.Year2021.Day11 do
   def flash(%Matrix{} = m, [{xy, _} | to_process]) do
     neighbors =
       Matrix.all_neighbors(m, xy)
-      |> Map.map(fn {{x, y}, val} -> inc(x, y, val) end)
+      |> Map.map(fn {_xy, val} -> inc(val) end)
 
     new_flash = Enum.filter(neighbors, fn {_xy, val} -> val == 10 end)
 

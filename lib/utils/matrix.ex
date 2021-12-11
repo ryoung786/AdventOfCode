@@ -48,10 +48,24 @@ defmodule Aoc.Utils.Matrix do
     |> Enum.into(%{})
   end
 
+  def with_xy(%Matrix{} = m) do
+    new =
+      m.m
+      |> Enum.with_index()
+      |> Enum.map(fn {row, y} ->
+        row
+        |> Enum.with_index()
+        |> Enum.map(fn {val, x} -> {{x, y}, val} end)
+      end)
+
+    %Matrix{m: new, w: m.w, h: m.h}
+  end
+
   def map(%Matrix{} = m, f) do
     new =
-      Enum.map(0..(m.h - 1), fn y ->
-        Enum.reduce((m.w - 1)..0, [], fn x, row -> [f.(x, y, Matrix.at(m, x, y)) | row] end)
+      m.m
+      |> Enum.map(fn row ->
+        Enum.map(row, fn val -> f.(val) end)
       end)
 
     %Matrix{m: new, w: m.w, h: m.h}
@@ -69,20 +83,20 @@ defmodule Aoc.Utils.Matrix do
     Enum.flat_map(0..(m.h - 1), fn y ->
       Enum.reduce((m.w - 1)..0, [], fn x, row ->
         val = Matrix.at(m, x, y)
-        if f.(x, y, val), do: [{{x, y}, val} | row], else: row
+        if f.(val), do: [{{x, y}, val} | row], else: row
       end)
     end)
   end
 
   def update(%Matrix{} = m, x, y, f) do
-    map(m, fn
-      ^x, ^y, curr_val -> f.(x, y, curr_val)
-      _x, _y, val -> val
+    map(Matrix.with_xy(m), fn
+      {{^x, ^y}, curr_val} -> f.(curr_val)
+      {{_x, _y}, val} -> val
     end)
   end
 
   def put(%Matrix{} = m, x, y, new_val) do
-    update(m, x, y, fn _, _, _ -> new_val end)
+    update(m, x, y, fn _ -> new_val end)
   end
 
   def put(%Matrix{} = m, map) do
