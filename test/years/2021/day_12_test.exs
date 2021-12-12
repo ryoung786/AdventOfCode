@@ -63,16 +63,16 @@ defmodule Aoc.Year2021.Day12Test do
       assert part_one(input) == 226
     end
 
-    # test "part 2 small", %{input_small: input} do
-    #   assert part_one(input) == 36
-    # end
+    test "part 2 small", %{input_small: input} do
+      assert part_two(input) == 36
+    end
 
-    # test "part 2 medium", %{input_med: input} do
-    #   assert part_one(input) == 103
-    # end
+    test "part 2 medium", %{input_med: input} do
+      assert part_two(input) == 103
+    end
 
-    # test "part 2 large", %{input_large: input} do
-    #   assert part_one(input) == 3509
-    # end
+    test "part 2 large", %{input_large: input} do
+      assert part_two(input) == 3509
+    end
   end
 end
