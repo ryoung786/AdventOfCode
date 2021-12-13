@@ -8,9 +8,13 @@ defmodule Mix.Tasks.GenDay do
         switches: [year: :integer, day: :integer]
       )
 
+    generate(Keyword.get(opts, :year, 2021), Keyword.get(opts, :day))
+  end
+
+  def generate(year, day) do
     assigns = %{
-      year: Keyword.get(opts, :year, 2021) |> Integer.to_string(),
-      day: Keyword.get(opts, :day) |> Integer.to_string() |> String.pad_leading(2)
+      year: year |> Integer.to_string(),
+      day: day |> Integer.to_string() |> String.pad_leading(2, "0")
     }
 
     # lib/aoc/years/2021/day_01.ex
