@@ -1,0 +1,22 @@
+defmodule Aoc.Year<%= @year %>.Day<%= @day %>Test do
+  use ExUnit.Case, async: true
+  import Aoc.Year<%= @year %>.Day<%= @day %>
+
+  setup_all do
+    input = """
+
+    """
+
+    {:ok, input: input}
+  end
+
+  describe "<%= @year %> Day <%= @day %>" do
+    test "part one", %{input: input} do
+      assert part_one(input) == :todo
+    end
+
+    # test "part two", %{input: input} do
+    #   assert part_two(input) == :todo
+    # end
+  end
+end

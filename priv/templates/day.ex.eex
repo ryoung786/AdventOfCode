@@ -1,0 +1,13 @@
+defmodule Aoc.Year<%= @year %>.Day<%= @day %> do
+  use Aoc.DayBase
+
+  def part_one(input) do
+    input
+    |> Input.to_str_list()
+  end
+
+  def part_two(input) do
+    input
+    |> Input.to_str_list()
+  end
+end
