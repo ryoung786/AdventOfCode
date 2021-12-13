@@ -32,26 +32,26 @@ defmodule Aoc.Year2021.Day12 do
   defp cave_size(cave), do: if(String.match?(cave, ~r/^[a-z]/), do: :small, else: :large)
 
   def generate_paths(graph, can_visit_a_small_cave_twice?) do
-    generate_paths2(graph, "start", [], !can_visit_a_small_cave_twice?)
+    generate_paths(graph, "start", [], !can_visit_a_small_cave_twice?)
     |> Enum.reject(&Enum.empty?/1)
     |> Enum.map(fn path ->
       path |> Enum.reverse() |> Enum.join("-")
     end)
   end
 
-  def generate_paths2(_graph, "end", visited, _exception), do: [["end" | visited]]
+  def generate_paths(_graph, "end", visited, _exception), do: [["end" | visited]]
 
-  def generate_paths2(graph, cur_node, visited, exception_used?) do
+  def generate_paths(graph, cur_node, visited, exception_used?) do
     if cave_size(cur_node) == :small && cur_node in visited do
       if exception_used?,
         do: [],
         else:
           Enum.reduce(graph[cur_node], [], fn cave, acc ->
-            acc ++ generate_paths2(graph, cave, [cur_node | visited], true)
+            acc ++ generate_paths(graph, cave, [cur_node | visited], true)
           end)
     else
       Enum.reduce(graph[cur_node], [], fn cave, acc ->
-        acc ++ generate_paths2(graph, cave, [cur_node | visited], exception_used?)
+        acc ++ generate_paths(graph, cave, [cur_node | visited], exception_used?)
       end)
     end
   end
