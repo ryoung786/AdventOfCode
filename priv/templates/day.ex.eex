@@ -4,10 +4,14 @@ defmodule Aoc.Year<%= @year %>.Day<%= @day %> do
   def part_one(input) do
     input
     |> Input.to_str_list()
+
+    "TBD"
   end
 
   def part_two(input) do
     input
     |> Input.to_str_list()
+
+    "TBD"
   end
 end
