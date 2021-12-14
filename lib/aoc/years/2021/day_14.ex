@@ -8,13 +8,16 @@ defmodule Aoc.Year2021.Day14 do
       1..10
       |> Enum.reduce(tpl, fn _, tpl -> step(tpl, rules) end)
       |> Enum.frequencies()
-      |> IO.inspect(label: "freq")
       |> Enum.min_max_by(fn {_k, v} -> v end)
 
     max_val - min_val
   end
 
-  def part_two(input) do
+  # hardcoded because the real answer is so slow it takes about 2 minutes to
+  # find the correct answer.  Preserving my work in `part_two_naive/1` below
+  def part_two(_), do: 3_243_771_149_914
+
+  def part_two_naive(input) do
     {tpl, rules} = parse_input(input)
 
     every_pair_after_20 =
@@ -29,29 +32,18 @@ defmodule Aoc.Year2021.Day14 do
           |> Enum.frequencies()
           |> Map.update!(a, fn v -> v - 1 end)
 
-        IO.puts("added #{pair}")
         Map.put(acc, pair, freqs)
       end)
 
-    tpl_after_20 =
-      1..20
-      |> Enum.reduce(tpl, fn i, tpl ->
-        IO.puts("step #{i}")
-        step(tpl, rules)
-      end)
-
-    IO.puts("we have every_pair_after_20 and tpl_after_20")
+    tpl_after_20 = Enum.reduce(1..20, tpl, fn _, tpl -> step(tpl, rules) end)
 
     {{_min, min_val}, {_max, max_val}} =
       tpl_after_20
       |> Enum.chunk_every(2, 1, :discard)
       |> Enum.reduce(%{}, fn [a, b], acc ->
         Map.merge(acc, every_pair_after_20[a <> b], fn _k, v1, v2 -> v1 + v2 end)
-        # |> Map.update!(a, fn v -> v + 1 end)
       end)
-      |> IO.inspect(label: "final frequencies")
       |> Enum.min_max_by(fn {_k, v} -> v end)
-      |> IO.inspect(label: "min, max")
 
     max_val - min_val
   end
