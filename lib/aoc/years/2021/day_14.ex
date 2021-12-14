@@ -19,12 +19,15 @@ defmodule Aoc.Year2021.Day14 do
 
     every_pair_after_20 =
       Enum.reduce(Map.keys(rules), %{}, fn pair, acc ->
+        [a, b] = String.split(pair, "", trim: true)
+
         freqs =
           1..20
-          |> Enum.reduce(String.split(pair, "", trim: true), fn _, tpl ->
+          |> Enum.reduce([a, b], fn _, tpl ->
             step(tpl, rules)
           end)
           |> Enum.frequencies()
+          |> Map.update!(a, fn v -> v - 1 end)
 
         IO.puts("added #{pair}")
         Map.put(acc, pair, freqs)
@@ -44,6 +47,7 @@ defmodule Aoc.Year2021.Day14 do
       |> Enum.chunk_every(2, 1, :discard)
       |> Enum.reduce(%{}, fn [a, b], acc ->
         Map.merge(acc, every_pair_after_20[a <> b], fn _k, v1, v2 -> v1 + v2 end)
+        # |> Map.update!(a, fn v -> v + 1 end)
       end)
       |> IO.inspect(label: "final frequencies")
       |> Enum.min_max_by(fn {_k, v} -> v end)
