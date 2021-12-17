@@ -8,10 +8,9 @@ defmodule Aoc.Year2021.Day17 do
   end
 
   def part_two(input) do
-    input
-    |> Input.to_str_list()
+    {xtarget, ytarget} = _target = to_target_range(input)
 
-    "TBD"
+    find_valid_slopes2(xtarget, ytarget)
   end
 
   def to_target_range(str) do
@@ -33,7 +32,7 @@ defmodule Aoc.Year2021.Day17 do
 
   def find_valid_slopes(_xmin..xmax = xtarget, _ymin.._ymax = ytarget) do
     for dx <- 1..(div(xmax, 2) + 1), dy <- 0..50 do
-      points = plot_course(dy, dx, xtarget, ytarget)
+      points = plot_course(dx, dy, xtarget, ytarget)
 
       if Enum.any?(points, fn point -> in_target?(xtarget, ytarget, point) end) do
         Enum.max_by(points, fn {_x, y} -> y end) |> elem(1)
@@ -42,6 +41,21 @@ defmodule Aoc.Year2021.Day17 do
       end
     end
     |> Enum.max()
+  end
+
+  def find_valid_slopes2(_xmin..xmax = xtarget, ymin.._ymax = ytarget) do
+    for dx <- 1..xmax, dy <- ymin..100 do
+      points = plot_course(dx, dy, xtarget, ytarget)
+
+      if Enum.any?(points, fn point -> in_target?(xtarget, ytarget, point) end) do
+        {dx, dy}
+      else
+        :nope
+      end
+    end
+    |> Enum.reject(fn val -> val == :nope end)
+    |> IO.inspect(label: "valid ")
+    |> Enum.count()
   end
 
   def plot_course(dx, dy, xtarget, ytarget) do
