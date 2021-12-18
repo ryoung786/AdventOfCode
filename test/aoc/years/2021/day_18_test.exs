@@ -25,22 +25,54 @@ defmodule Aoc.Year2021.Day18Test do
     end
 
     test "explode" do
-      assert explode("[7,[6,[5,[4,[3,2]]]]]") == "[7,[6,[5,[7,0]]]]"
-      assert explode("[[6,[5,[4,[3,2]]]],1]") == "[[6,[5,[7,0]]],3]"
-      assert explode("[[[[[9,8],1],2],3],4]") == "[[[[0,9],2],3],4]"
+      assert explode("[7,[6,[5,[4,[3,2]]]]]" |> to_snailfish_num()) ==
+               "[7,[6,[5,[7,0]]]]" |> to_snailfish_num()
 
-      assert explode("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]") ==
-               "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"
+      assert explode("[[6,[5,[4,[3,2]]]],1]" |> to_snailfish_num()) ==
+               "[[6,[5,[7,0]]],3]" |> to_snailfish_num()
 
-      assert explode("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]") == "[[3,[2,[8,0]]],[9,[5,[7,0]]]]"
+      assert explode("[[[[[9,8],1],2],3],4]" |> to_snailfish_num()) ==
+               "[[[[0,9],2],3],4]" |> to_snailfish_num()
+
+      assert explode("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]" |> to_snailfish_num()) ==
+               "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]" |> to_snailfish_num()
+
+      assert explode("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]" |> to_snailfish_num()) ==
+               "[[3,[2,[8,0]]],[9,[5,[7,0]]]]" |> to_snailfish_num()
     end
 
     test "add" do
-      assert add("[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]") == "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+      # a = to_snailfish_num("[[[[4,3],4],4],[7,[[8,4],9]]]")
+      # b = to_snailfish_num("[1,1]")
+      # assert add(a, b) == "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]" |> to_snailfish_num()
+
+      input = """
+      [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+      [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
+      [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
+      [[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
+      [7,[5,[[3,8],[1,4]]]]
+      [[2,[2,2]],[8,[8,1]]]
+      [2,9]
+      [1,[[[9,3],9],[[9,0],[0,7]]]]
+      [[[5,[7,4]],7],1]
+      [[[[4,2],2],6],[8,7]]
+      """
+
+      assert part_one(input) == 3488
+
+      # [a, b | rest] = to_snailfish_nums(input)
+
+      # assert add(a, b) ==
+      #          "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]" |> to_snailfish_num()
     end
 
-    # test "part two", %{input: input} do
-    #   assert part_two(input) == :todo
-    # end
+    test "magnitude" do
+      assert magnitude("[[[[3,0],[5,3]],[4,4]],[5,5]]") == 791
+    end
+
+    test "part two", %{input: input} do
+      assert part_two(input) == 3993
+    end
   end
 end
