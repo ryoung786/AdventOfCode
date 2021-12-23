@@ -24,15 +24,19 @@ defmodule Aoc.Year2021.Day16 do
 
   # Has sub-packets, L=0
   def parse_instruction(
-        <<_version::size(3), _type_id::size(3), 0::1, total_length_in_bits::15, rest::bits>>
+        <<version::size(3), type_id::size(3), 0::1, total_length_in_bits::15, rest::bits>>
       ) do
-    # parse_operands_by_bit_length(rest, total_length_in_bits)
-    {total_length_in_bits, rest}
+    <<sub_packets::size(total_length_in_bits), rest::bits>> = rest
+
+    [
+      {version, type_id, parse_instruction(<<sub_packets::size(total_length_in_bits)>>)}
+      | parse_instruction(rest)
+    ]
   end
 
   # Has sub-packets, L=1
   def parse_instruction(
-        <<_version::size(24), _type_id::size(24), 1::1, num_sub_packets::11, rest::bits>>
+        <<_version::size(3), _type_id::size(3), 1::1, num_sub_packets::11, rest::bits>>
       ) do
     {num_sub_packets, rest}
   end

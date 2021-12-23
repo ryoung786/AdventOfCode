@@ -11,7 +11,7 @@ defmodule Mix.Tasks.GenDay do
     generate(Keyword.get(opts, :year, 2021), Keyword.get(opts, :day))
   end
 
-  def generate(year, day) do
+  def generate(year, day) when is_integer(year) and is_integer(day) do
     assigns = %{
       year: year |> Integer.to_string(),
       day: day |> Integer.to_string() |> String.pad_leading(2, "0")
