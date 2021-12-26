@@ -16,8 +16,9 @@ defmodule Aoc.Year2021.Day21Test do
       assert part_one(input) == 739_785
     end
 
+    # @tag timeout: :infinity
     # test "part two", %{input: input} do
-    #   assert part_two(input) == :todo
+    #   assert part_two(input) == 444_356_092_776_315
     # end
   end
 end
