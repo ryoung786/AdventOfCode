@@ -2,12 +2,14 @@ defmodule Aoc.Utils.Matrix do
   alias __MODULE__, as: Matrix
   defstruct m: [], w: 0, h: 0
 
-  def from_string(str) do
+  def from_string(str), do: from_string(str, &String.to_integer/1)
+
+  def from_string(str, mapping_function) do
     m =
       str
       |> String.split("\n", trim: true)
       |> Enum.map(fn line ->
-        line |> String.split("", trim: true) |> Enum.map(&String.to_integer/1)
+        line |> String.split("", trim: true) |> Enum.map(fn ch -> mapping_function.(ch) end)
       end)
 
     h = Enum.count(m)
