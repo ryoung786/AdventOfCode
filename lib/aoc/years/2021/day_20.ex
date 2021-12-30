@@ -1,27 +1,16 @@
-# 19771 too high
-# 48708
-
 defmodule Aoc.Year2021.Day20 do
   use Aoc.DayBase
   alias Aoc.Utils.Matrix
 
-  def part_one(input) do
+  def part_one(input), do: run(input, 2)
+  def part_two(input), do: run(input, 50)
+
+  def run(input, iterations) do
     {algo, img} = parse_input(input)
+    padded_img = pad(img, iterations)
 
-    1..2
-    |> Enum.reduce(img, fn step, output ->
-      enhance(algo, output, step)
-    end)
-    |> Matrix.count(fn _x, _y, val -> val == "#" end)
-  end
-
-  def part_two(input) do
-    {algo, img} = parse_input(input)
-
-    1..50
-    |> Enum.reduce(img, fn step, output ->
-      enhance(algo, output, step)
-    end)
+    1..iterations
+    |> Enum.reduce(padded_img, fn _step, output -> enhance(algo, output) end)
     |> Matrix.count(fn _x, _y, val -> val == "#" end)
   end
 
@@ -31,22 +20,11 @@ defmodule Aoc.Year2021.Day20 do
     {algo_str, img}
   end
 
-  def enhance(algo, img, step) do
-    {algo_0, algo_511} = {String.at(algo, 0), String.at(algo, 511)}
-
-    padding =
-      if step == 1 do
-        if algo_0 == ".", do: ".", else: algo_511
-      else
-        algo_0
-      end
-
-    padded_img = pad(img, padding)
-
-    padded_img
+  def enhance(algo, img) do
+    img
     |> Matrix.with_xy()
     |> Matrix.map(fn {{x, y}, _val} ->
-      enhanced_pixel(algo, padded_img, x, y)
+      enhanced_pixel(algo, img, x, y)
     end)
   end
 
@@ -75,15 +53,20 @@ defmodule Aoc.Year2021.Day20 do
   end
 
   def pad(%Matrix{m: m, w: w, h: h}, padding) do
-    all_padding = for _ <- 1..(w + 4), do: padding
+    all_padding =
+      for _ <- 1..padding do
+        for _ <- 1..(w + padding * 2), do: "."
+      end
+
+    h_pad = for _ <- 1..padding, do: "."
 
     %Matrix{
       m:
-        [all_padding, all_padding] ++
-          Enum.map(m, fn row -> [padding, padding] ++ row ++ [padding, padding] end) ++
-          [all_padding, all_padding],
-      w: w + 4,
-      h: h + 4
+        all_padding ++
+          Enum.map(m, fn row -> h_pad ++ row ++ h_pad end) ++
+          all_padding,
+      w: w + padding * 2,
+      h: h + padding * 2
     }
   end
 end
