@@ -1,6 +1,8 @@
 defmodule AocWeb.Components do
   use AocWeb, :component
 
+  @url_base "https://github.com/ryoung786/AdventOfCode/blob/main/lib/aoc/years"
+
   def answer(assigns) do
     ~H"""
     <section class="phx-hero">
@@ -18,7 +20,7 @@ defmodule AocWeb.Components do
     day = String.pad_leading("#{day}", 2, "0")
 
     if String.to_integer(day) in 1..25,
-      do: "https://github.com/ryoung786/AdventOfCode/blob/main/lib/years/#{year}/day_#{day}.ex",
+      do: "#{@url_base}/#{year}/day_#{day}.ex",
       else: "/"
   end
 
