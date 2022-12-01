@@ -1,0 +1,89 @@
+# Advent Of Code 2022 Day 1
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"}
+])
+```
+
+## Section
+
+```elixir
+defmodule Load do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def input() do
+    {:ok, %{body: input_raw}} =
+      Req.get(
+        "https://adventofcode.com/2022/day/1/input",
+        headers: [cookie: "session=#{@aoc_session}"]
+      )
+
+    input_raw
+  end
+end
+```
+
+```elixir
+defmodule Part1 do
+  @input Load.input()
+
+  def solve(input \\ @input) do
+    input
+    |> String.split("\n\n", trim: true)
+    |> Enum.map(&elf_line_to_total_calories/1)
+    |> Enum.max()
+  end
+
+  defp elf_line_to_total_calories(line) do
+    line
+    |> String.split("\n", trim: true)
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.sum()
+  end
+end
+
+Part1.solve()
+```
+
+```elixir
+defmodule Part2 do
+  @input Load.input()
+
+  def solve(input \\ @input) do
+    input
+    |> String.split("\n\n", trim: true)
+    |> Enum.map(&elf_line_to_total_calories/1)
+    |> Enum.sort(fn a, b -> b < a end)
+    |> Enum.take(3)
+    |> Enum.sum()
+  end
+
+  defp elf_line_to_total_calories(line) do
+    line
+    |> String.split("\n", trim: true)
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.sum()
+  end
+end
+
+Part2.solve()
+```
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule Test do
+  use ExUnit.Case, async: true
+
+  test "part1" do
+    assert Part1.solve() == 72511
+  end
+
+  test "part2" do
+    assert Part2.solve() == 212_117
+  end
+end
+
+ExUnit.run()
+```
