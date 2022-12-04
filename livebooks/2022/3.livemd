@@ -1,0 +1,72 @@
+# Day 3
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/3/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+"""
+```
+
+## Part 1
+
+```elixir
+split_rucksack = fn sack ->
+  middle = div(String.length(sack), 2)
+  sack |> String.to_charlist() |> Enum.chunk_every(middle)
+end
+
+common_item = fn sacks ->
+  sets = for sack <- sacks, do: MapSet.new(sack)
+  Enum.reduce(sets, &MapSet.intersection/2) |> MapSet.to_list() |> hd()
+end
+
+to_priority = fn
+  ch when ch in ?a..?z -> ch - ?a + 1
+  ch -> ch - ?A + 27
+end
+```
+
+```elixir
+# input = test_input
+
+input
+|> String.split("\n", trim: true)
+|> Enum.map(&split_rucksack.(&1))
+|> Enum.map(&common_item.(&1))
+|> Enum.map(&to_priority.(&1))
+|> Enum.sum()
+```
+
+## Part 2
+
+```elixir
+# input = test_input
+
+input
+|> String.split("\n", trim: true)
+|> Enum.chunk_every(3)
+|> Enum.map(fn sacks -> for sack <- sacks, do: String.to_charlist(sack) end)
+|> Enum.map(&common_item.(&1))
+|> Enum.map(&to_priority.(&1))
+|> Enum.sum()
+```

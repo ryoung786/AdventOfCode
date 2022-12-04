@@ -1,0 +1,121 @@
+# Day 2
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+```
+
+## Input
+
+```elixir
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/2/input"
+{:ok, %{body: input_raw}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+input_raw
+```
+
+```elixir
+test_input = """
+A Y
+B X
+C Z
+"""
+```
+
+## Part 1
+
+```elixir
+input_raw
+|> String.split("\n", trim: true)
+|> Enum.map(fn
+  "A X" -> 4
+  "A Y" -> 8
+  "A Z" -> 3
+  "B X" -> 1
+  "B Y" -> 5
+  "B Z" -> 9
+  "C X" -> 7
+  "C Y" -> 2
+  "C Z" -> 6
+end)
+|> Enum.sum()
+```
+
+## Part 2
+
+```elixir
+input_raw
+|> String.split("\n", trim: true)
+|> Enum.map(fn
+  "A X" -> 3
+  "A Y" -> 4
+  "A Z" -> 8
+  "B X" -> 1
+  "B Y" -> 5
+  "B Z" -> 9
+  "C X" -> 2
+  "C Y" -> 6
+  "C Z" -> 7
+end)
+|> Enum.sum()
+```
+
+## VegaLite Exploration
+
+```elixir
+scores =
+  input_raw
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn
+    "A X" -> 3
+    "A Y" -> 4
+    "A Z" -> 8
+    "B X" -> 1
+    "B Y" -> 5
+    "B Z" -> 9
+    "C X" -> 2
+    "C Y" -> 6
+    "C Z" -> 7
+  end)
+
+aggregate_scores =
+  input_raw
+  |> String.split("\n", trim: true)
+  |> Enum.reduce([0], fn
+    "A X", [n | _] = lst -> [n + 4 | lst]
+    "A Y", [n | _] = lst -> [n + 8 | lst]
+    "A Z", [n | _] = lst -> [n + 3 | lst]
+    "B X", [n | _] = lst -> [n + 1 | lst]
+    "B Y", [n | _] = lst -> [n + 5 | lst]
+    "B Z", [n | _] = lst -> [n + 9 | lst]
+    "C X", [n | _] = lst -> [n + 7 | lst]
+    "C Y", [n | _] = lst -> [n + 2 | lst]
+    "C Z", [n | _] = lst -> [n + 6 | lst]
+  end)
+  |> Enum.reverse()
+```
+
+```elixir
+Vl.new(width: 800, height: 400)
+# |> Vl.data_from_values(%{"x" => x, "score" => scores})
+|> Vl.data_from_values(x: 0..(Enum.count(scores) - 1), scores: scores, agg: aggregate_scores)
+|> Vl.mark(:bar)
+|> Vl.encode_field(:x, "x")
+|> Vl.encode_field(:y, "scores", type: :quantitative, axis: [label_angle: 0])
+|> Vl.encode_field(:y2, "agg", type: :quantitative)
+```
+
+```elixir
+Vl.new(width: 800, height: 400)
+# |> Vl.data_from_values(%{"x" => x, "score" => scores})
+|> Vl.data_from_values(x: 0..(Enum.count(scores) - 1), scores: scores, agg: aggregate_scores)
+|> Vl.encode_field(:x, "x")
+|> Vl.encode_field(:y, "scores", type: :quantitative)
+|> Vl.encode_field(:y2, "agg", type: :quantitative)
+|> Vl.mark(:bar)
+```

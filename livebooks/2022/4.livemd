@@ -1,0 +1,62 @@
+# Day 4
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/4/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8
+"""
+```
+
+## Part 1
+
+```elixir
+parse_row = fn row_str ->
+  [a1, a2, b1, b2] =
+    ~r/([0-9]+)-([0-9]+),([0-9]+)-([0-9]+)/
+    |> Regex.run(row_str)
+    |> Enum.drop(1)
+    |> Enum.map(&String.to_integer/1)
+
+  {MapSet.new(a1..a2), MapSet.new(b1..b2)}
+end
+```
+
+```elixir
+input
+|> String.split("\n", trim: true)
+|> Enum.count(fn str ->
+  {range_a, range_b} = parse_row.(str)
+  MapSet.subset?(range_a, range_b) or MapSet.subset?(range_b, range_a)
+end)
+```
+
+## Part 2
+
+```elixir
+input
+|> String.split("\n", trim: true)
+|> Enum.count(fn str ->
+  {range_a, range_b} = parse_row.(str)
+  not MapSet.disjoint?(range_a, range_b)
+end)
+```
