@@ -1,0 +1,140 @@
+# Day 8
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 8
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+30373
+25512
+65332
+33549
+35390
+"""
+```
+
+## Part 1
+
+```elixir
+defmodule Grid do
+  def new(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn line ->
+      line
+      |> String.split("", trim: true)
+      |> Enum.map(&String.to_integer/1)
+    end)
+  end
+
+  def size(grid), do: Enum.count(grid)
+
+  def row(grid, i), do: Enum.at(grid, i)
+
+  def col(grid, i) do
+    for row <- grid, do: Enum.at(row, i)
+  end
+
+  def is_visible(grid, {i, j}) do
+    h = grid |> row(i) |> Enum.at(j)
+
+    [left(grid, {i, j}), right(grid, {i, j}), up(grid, {i, j}), down(grid, {i, j})]
+    |> Enum.any?(&tallest?(&1, h))
+  end
+
+  def left(grid, {i, j}), do: grid |> row(i) |> Enum.take(j)
+  def right(grid, {i, j}), do: grid |> row(i) |> Enum.drop(j + 1)
+  def up(grid, {i, j}), do: grid |> col(j) |> Enum.take(i)
+  def down(grid, {i, j}), do: grid |> col(j) |> Enum.drop(i + 1)
+
+  def tallest?(trees, h), do: Enum.all?(trees, &(h > &1))
+end
+```
+
+```elixir
+# input = test_input
+
+grid = Grid.new(input)
+n = Grid.size(grid)
+
+for i <- 0..(n - 1), j <- 0..(n - 1), reduce: 0 do
+  acc -> if Grid.is_visible(grid, {i, j}), do: acc + 1, else: acc
+end
+```
+
+## Part 2
+
+```elixir
+defmodule Grid do
+  def new(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn line ->
+      line
+      |> String.split("", trim: true)
+      |> Enum.map(&String.to_integer/1)
+    end)
+  end
+
+  def size(grid), do: Enum.count(grid)
+
+  def row(grid, i), do: Enum.at(grid, i)
+
+  def col(grid, i) do
+    for row <- grid, do: Enum.at(row, i)
+  end
+
+  def scenic_score(grid, {i, j}) do
+    h = grid |> row(i) |> Enum.at(j)
+
+    l = view_dist(left(grid, {i, j}), h)
+    r = view_dist(right(grid, {i, j}), h)
+    u = view_dist(up(grid, {i, j}), h)
+    d = view_dist(down(grid, {i, j}), h)
+
+    # [l, r, u, d] |> IO.inspect(label: "view distances {#{i},#{j}}")
+    l * r * u * d
+  end
+
+  def view_dist(trees, h) do
+    n =
+      trees
+      |> Enum.take_while(fn tree -> h > tree end)
+      |> Enum.count()
+
+    if n == Enum.count(trees), do: n, else: n + 1
+  end
+
+  def left(grid, {i, j}), do: grid |> row(i) |> Enum.take(j) |> Enum.reverse()
+  def right(grid, {i, j}), do: grid |> row(i) |> Enum.drop(j + 1)
+  def up(grid, {i, j}), do: grid |> col(j) |> Enum.take(i) |> Enum.reverse()
+  def down(grid, {i, j}), do: grid |> col(j) |> Enum.drop(i + 1)
+end
+```
+
+```elixir
+# input = test_input
+
+grid = Grid.new(input)
+n = Grid.size(grid)
+
+for i <- 1..(n - 2), j <- 1..(n - 2) do
+  Grid.scenic_score(grid, {i, j})
+end
+|> Enum.max()
+```
