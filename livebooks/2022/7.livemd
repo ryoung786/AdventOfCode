@@ -73,24 +73,17 @@ end
 ```elixir
 # input = test_input
 
-{_cwd, _dirs, sizemap} =
+{_dirs, sizemap} =
   input
   |> String.split("\n", trim: true)
-  |> Enum.reduce({"", [], %{}}, fn line, {cwd, dirs, sizemap} ->
+  |> Enum.reduce({["/"], %{}}, fn line, {dirs, sizemap} ->
+    [cwd | _] = dirs
+
     case Part1.parse_line(line) do
-      {:push_dir, dirname} ->
-        cwd = "#{cwd}/#{dirname}"
-        {cwd, [cwd | dirs], sizemap}
-
-      :pop_dir ->
-        [cwd | dirs] = dirs
-        {cwd, dirs, sizemap}
-
-      {:ls_output_file, %{size: size}} ->
-        {cwd, dirs, Part1.inc_for_dirs(sizemap, dirs, size)}
-
-      _ ->
-        {cwd, dirs, sizemap}
+      {:push_dir, dirname} -> {["#{cwd}#{dirname}/" | dirs], sizemap}
+      :pop_dir -> {Enum.drop(dirs, 1), sizemap}
+      {:ls_output_file, %{size: size}} -> {dirs, Part1.inc_for_dirs(sizemap, dirs, size)}
+      _ -> {dirs, sizemap}
     end
   end)
 
@@ -100,8 +93,17 @@ sizemap
 |> Enum.sum()
 ```
 
+## Part 2
+
 ```elixir
-sizemap["qst"]
+total_disk_space = 70_000_000
+unused_space = total_disk_space - sizemap["/"]
+space_still_needed = 30_000_000 - unused_space
 ```
 
-## Part 2
+```elixir
+sizemap
+|> Map.filter(fn {_dir, size} -> size > space_still_needed end)
+|> Map.values()
+|> Enum.min()
+```
