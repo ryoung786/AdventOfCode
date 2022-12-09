@@ -1,0 +1,136 @@
+# Day 5
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 5
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
+
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2
+"""
+```
+
+```elixir
+parse_move_str = fn str ->
+  [_, move, _, from, _, to] = String.split(str, " ")
+  lst = for i <- [move, from, to], do: String.to_integer(i)
+  List.to_tuple(lst)
+end
+```
+
+```elixir
+parse_row_str = fn row_str ->
+  row_str
+  |> String.graphemes()
+  |> Enum.chunk_every(4)
+  |> Enum.map(fn str ->
+    str
+    |> Enum.join()
+    |> String.replace(~r/[\[\]\s]/, "")
+  end)
+end
+
+add_crates_to_stacks = fn row_str, stacks ->
+  row_str
+  |> parse_row_str.()
+  |> Enum.with_index(1)
+  |> Enum.reject(fn {crate, _i} -> crate == "" end)
+  |> Enum.reduce(stacks, fn {crate, i}, acc ->
+    stack = Map.get(acc, i, [])
+    Map.put(acc, i, stack ++ [crate])
+  end)
+end
+
+create_stacks = fn crane_str ->
+  crane_str
+  |> String.split("\n", trim: true)
+  |> Enum.filter(fn str -> str |> String.trim() |> String.starts_with?("[") end)
+  |> Enum.reduce(%{}, fn row_str, stacks ->
+    add_crates_to_stacks.(row_str, stacks)
+  end)
+end
+```
+
+## Part 1
+
+```elixir
+# input = test_input
+
+[crane_str, move_list] = input |> String.split("\n\n", trim: true)
+```
+
+```elixir
+stacks = create_stacks.(crane_str)
+
+final_configuration =
+  move_list
+  |> String.split("\n", trim: true)
+  |> Enum.reduce(stacks, fn move_str, stacks ->
+    {num, from, to} = parse_move_str.(move_str)
+    from_stack = Map.get(stacks, from, [])
+    to_stack = Map.get(stacks, to, [])
+    {moving, rest} = Enum.split(from_stack, num)
+
+    stacks
+    |> Map.put(from, rest)
+    |> Map.put(to, Enum.reverse(moving) ++ to_stack)
+  end)
+```
+
+```elixir
+for({_, [ch | _]} <- final_configuration, do: ch)
+|> Enum.join()
+```
+
+## Part 2
+
+```elixir
+# input = test_input
+
+[crane_str, move_list] = input |> String.split("\n\n", trim: true)
+```
+
+```elixir
+stacks = create_stacks.(crane_str)
+
+final_configuration =
+  move_list
+  |> String.split("\n", trim: true)
+  |> Enum.reduce(stacks, fn move_str, stacks ->
+    {num, from, to} = parse_move_str.(move_str)
+    from_stack = Map.get(stacks, from, [])
+    to_stack = Map.get(stacks, to, [])
+    {moving, rest} = Enum.split(from_stack, num)
+
+    stacks
+    |> Map.put(from, rest)
+    |> Map.put(to, moving ++ to_stack)
+  end)
+```
+
+```elixir
+for({_, [ch | _]} <- final_configuration, do: ch)
+|> Enum.join()
+```
