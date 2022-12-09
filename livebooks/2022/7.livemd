@@ -1,0 +1,107 @@
+# Day 7
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 7
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+$ cd /
+$ ls
+dir a
+14848514 b.txt
+8504156 c.dat
+dir d
+$ cd a
+$ ls
+dir e
+29116 f
+2557 g
+62596 h.lst
+$ cd e
+$ ls
+584 i
+$ cd ..
+$ cd ..
+$ cd d
+$ ls
+4060174 j
+8033020 d.log
+5626152 d.ext
+7214296 k
+"""
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def parse_line("$ cd /"), do: :root
+  def parse_line("$ cd .."), do: :pop_dir
+  def parse_line("$ cd " <> dir), do: {:push_dir, dir}
+  def parse_line("$ ls"), do: :ls
+  def parse_line("dir " <> dir), do: {:ls_output_dir, dir}
+
+  def parse_line(line) do
+    [size_str, filename] = String.split(line, " ")
+    {:ls_output_file, %{filename: filename, size: String.to_integer(size_str)}}
+  end
+
+  def inc_for_dirs(sizemap, dirs, size) do
+    dirs
+    |> Enum.reduce(sizemap, fn dir, acc ->
+      Map.update(acc, dir, size, &(&1 + size))
+    end)
+  end
+end
+```
+
+```elixir
+# input = test_input
+
+{_cwd, _dirs, sizemap} =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.reduce({"", [], %{}}, fn line, {cwd, dirs, sizemap} ->
+    case Part1.parse_line(line) do
+      {:push_dir, dirname} ->
+        cwd = "#{cwd}/#{dirname}"
+        {cwd, [cwd | dirs], sizemap}
+
+      :pop_dir ->
+        [cwd | dirs] = dirs
+        {cwd, dirs, sizemap}
+
+      {:ls_output_file, %{size: size}} ->
+        {cwd, dirs, Part1.inc_for_dirs(sizemap, dirs, size)}
+
+      _ ->
+        {cwd, dirs, sizemap}
+    end
+  end)
+
+sizemap
+|> Map.reject(fn {_dir, size} -> size > 100_000 end)
+|> Map.values()
+|> Enum.sum()
+```
+
+```elixir
+sizemap["qst"]
+```
+
+## Part 2
