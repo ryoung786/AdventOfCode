@@ -1,0 +1,79 @@
+# Day 6
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 6
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = ~w(
+  mjqjpqmgbljsphdztnvjfqwrcgsmlb 
+  bvwbjplbgvbhsrlpgdmjqwftvncz
+  nppdvjthqldpwncqszvftbrmjlhg
+  nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg
+  zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw
+)
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def start_of_packet_marker_pos(str, i \\ 4) do
+    {header, rest} = String.split_at(str, 4)
+    [_ | last3] = header_chars = String.graphemes(header)
+
+    if all_uniq(header_chars),
+      do: i,
+      else: start_of_packet_marker_pos(Enum.join(last3) <> rest, i + 1)
+  end
+
+  defp all_uniq(lst), do: Enum.uniq(lst) == lst
+end
+```
+
+```elixir
+for str <- test_input, do: Part1.start_of_packet_marker_pos(str)
+```
+
+```elixir
+Part1.start_of_packet_marker_pos(input)
+```
+
+## Part 2
+
+```elixir
+defmodule Part2 do
+  def start_of_message_marker_pos(str, i \\ 14) do
+    {header, rest} = String.split_at(str, 14)
+    [_ | last13] = header_chars = String.graphemes(header)
+
+    if all_uniq(header_chars),
+      do: i,
+      else: start_of_message_marker_pos(Enum.join(last13) <> rest, i + 1)
+  end
+
+  defp all_uniq(lst), do: Enum.uniq(lst) == lst
+end
+```
+
+```elixir
+for str <- test_input, do: Part2.start_of_message_marker_pos(str)
+```
+
+```elixir
+Part2.start_of_message_marker_pos(input)
+```
