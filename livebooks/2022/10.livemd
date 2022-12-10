@@ -1,0 +1,240 @@
+# Day 10
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 10
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+addx 15
+addx -11
+addx 6
+addx -3
+addx 5
+addx -1
+addx -8
+addx 13
+addx 4
+noop
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx -35
+addx 1
+addx 24
+addx -19
+addx 1
+addx 16
+addx -11
+noop
+noop
+addx 21
+addx -15
+noop
+noop
+addx -3
+addx 9
+addx 1
+addx -3
+addx 8
+addx 1
+addx 5
+noop
+noop
+noop
+noop
+noop
+addx -36
+noop
+addx 1
+addx 7
+noop
+noop
+noop
+addx 2
+addx 6
+noop
+noop
+noop
+noop
+noop
+addx 1
+noop
+noop
+addx 7
+addx 1
+noop
+addx -13
+addx 13
+addx 7
+noop
+addx 1
+addx -33
+noop
+noop
+noop
+addx 2
+noop
+noop
+noop
+addx 8
+noop
+addx -1
+addx 2
+addx 1
+noop
+addx 17
+addx -9
+addx 1
+addx 1
+addx -3
+addx 11
+noop
+noop
+addx 1
+noop
+addx 1
+noop
+noop
+addx -13
+addx -19
+addx 1
+addx 3
+addx 26
+addx -30
+addx 12
+addx -1
+addx 3
+addx 1
+noop
+noop
+noop
+addx -9
+addx 18
+addx 1
+addx 2
+noop
+noop
+addx 9
+noop
+noop
+noop
+addx -1
+addx 2
+addx -37
+addx 1
+addx 3
+noop
+addx 15
+addx -21
+addx 22
+addx -6
+addx 1
+noop
+addx 2
+addx 1
+noop
+addx -10
+noop
+noop
+addx 20
+addx 1
+addx 2
+addx 2
+addx -6
+addx -11
+noop
+noop
+noop
+"""
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def register_values(input) do
+    input
+    |> Enum.reduce({[1], 1}, fn
+      "noop", {lst, val} ->
+        {[val | lst], val}
+
+      "addx " <> n, {lst, val} ->
+        n = String.to_integer(n)
+        {[val + n | [val | lst]], val + n}
+    end)
+    |> elem(0)
+    |> Enum.reverse()
+    |> Enum.with_index(1)
+  end
+
+  def solve(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> register_values()
+    |> Enum.drop(19)
+    |> Enum.take_every(40)
+    |> Enum.map(fn {n, i} -> n * i end)
+    |> Enum.sum()
+  end
+end
+
+Part1.solve(test_input)
+```
+
+```elixir
+lst = [:a, :b, :c]
+[:y | [:z | lst]]
+```
+
+## Part 2
+
+```elixir
+defmodule Part2 do
+  def pixel_array(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Part1.register_values()
+    |> Enum.map(fn {middle_pixel, during_cycle} ->
+      pixel_being_drawn = rem(during_cycle - 1, 40)
+      pixel_being_drawn in (middle_pixel - 1)..(middle_pixel + 1)
+    end)
+  end
+
+  def solve(input) do
+    pixel_array(input)
+    |> Enum.map(fn is_on -> if is_on, do: "#", else: "." end)
+    |> Enum.chunk_every(40)
+    |> Enum.map(&Enum.join/1)
+    |> Enum.join("\n")
+    |> IO.puts()
+  end
+
+  def solve_vega_lite(input) do
+    pixel_array(input)
+  end
+end
+
+Part2.solve(input)
+# Part2.solve_vega_lite(input)
+```
