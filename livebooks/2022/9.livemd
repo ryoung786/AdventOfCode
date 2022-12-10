@@ -1,0 +1,117 @@
+# Day 9
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 9
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+R 4
+U 4
+L 3
+D 1
+R 4
+D 1
+L 5
+R 2
+"""
+```
+
+## Part 1
+
+```elixir
+defmodule Point do
+  defstruct x: 0, y: 0
+
+  def left(p), do: %{p | x: p.x - 1}
+  def right(p), do: %{p | x: p.x + 1}
+  def down(p), do: %{p | y: p.y - 1}
+  def up(p), do: %{p | y: p.y + 1}
+end
+
+defmodule State do
+  @origin %Point{x: 0, y: 0}
+  defstruct visited: MapSet.new([@origin]), t: @origin, h: @origin
+end
+```
+
+```elixir
+defmodule Rope do
+  def move(state, dir, steps) do
+    for _ <- 0..(steps - 1), reduce: state do
+      s when dir == "L" -> left(s)
+      s when dir == "R" -> right(s)
+      s when dir == "U" -> up(s)
+      s when dir == "D" -> down(s)
+    end
+  end
+
+  def left(%{t: t, h: h} = state) do
+    new_t = if h.x < t.x, do: %Point{x: t.x - 1, y: h.y}, else: t
+    %State{visited: MapSet.put(state.visited, new_t), t: new_t, h: Point.left(h)}
+  end
+
+  def right(%{t: t, h: h} = state) do
+    new_t = if h.x > t.x, do: %Point{x: t.x + 1, y: h.y}, else: t
+    %State{visited: MapSet.put(state.visited, new_t), t: new_t, h: Point.right(h)}
+  end
+
+  def down(%{t: t, h: h} = state) do
+    new_t = if h.y < t.y, do: %Point{x: h.x, y: t.y - 1}, else: t
+    %State{visited: MapSet.put(state.visited, new_t), t: new_t, h: Point.down(h)}
+  end
+
+  def up(%{t: t, h: h} = state) do
+    new_t = if h.y > t.y, do: %Point{x: h.x, y: t.y + 1}, else: t
+    %State{visited: MapSet.put(state.visited, new_t), t: new_t, h: Point.up(h)}
+  end
+end
+```
+
+```elixir
+%State{}
+|> Rope.right()
+|> Rope.right()
+|> Rope.right()
+|> Rope.right()
+|> Rope.up()
+|> Rope.up()
+|> Rope.up()
+|> Rope.up()
+|> Rope.left()
+|> Rope.left()
+|> Rope.left()
+
+%State{}
+|> Rope.move("R", 4)
+```
+
+```elixir
+# input = test_input
+
+state =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.reduce(%State{}, fn line, state ->
+    [dir, n] = String.split(line, " ")
+    Rope.move(state, dir, String.to_integer(n))
+  end)
+
+MapSet.size(state.visited)
+```
+
+## Part 2
