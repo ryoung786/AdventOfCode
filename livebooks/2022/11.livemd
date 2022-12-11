@@ -1,0 +1,196 @@
+# Day 11
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 11
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+Monkey 0:
+  Starting items: 79, 98
+  Operation: new = old * 19
+  Test: divisible by 23
+    If true: throw to monkey 2
+    If false: throw to monkey 3
+
+Monkey 1:
+  Starting items: 54, 65, 75, 74
+  Operation: new = old + 6
+  Test: divisible by 19
+    If true: throw to monkey 2
+    If false: throw to monkey 0
+
+Monkey 2:
+  Starting items: 79, 60, 97
+  Operation: new = old * old
+  Test: divisible by 13
+    If true: throw to monkey 1
+    If false: throw to monkey 3
+
+Monkey 3:
+  Starting items: 74
+  Operation: new = old + 3
+  Test: divisible by 17
+    If true: throw to monkey 0
+    If false: throw to monkey 1
+"""
+```
+
+```elixir
+defmodule Monkey do
+  defstruct id: 0, items: [], op: nil, test: nil, true_target: 0, false_target: 0, inspections: 0
+
+  def inspect(monkey, worry_level, worry_divisor \\ 3) do
+    worry_level = (monkey.op.(worry_level) / worry_divisor) |> floor()
+    target = if monkey.test.(worry_level), do: monkey.true_target, else: monkey.false_target
+
+    m =
+      monkey
+      |> Map.put(:items, Enum.drop(monkey.items, 1))
+      |> Map.put(:inspections, monkey.inspections + 1)
+
+    {m, worry_level, target}
+  end
+end
+```
+
+```elixir
+defmodule Input do
+  def load(input) do
+    for monkey_str <- String.split(input, "\n\n", trim: true), into: %{} do
+      monkey = parse_monkey_str(monkey_str)
+      {monkey.id, monkey}
+    end
+  end
+
+  def parse_monkey_str(monkey_str) do
+    monkey_str
+    |> String.split("\n", trim: true)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reduce(%Monkey{}, fn
+      "Monkey " <> n, monkey -> %{monkey | id: parse_id(n)}
+      "Starting items: " <> items, monkey -> %{monkey | items: parse_items(items)}
+      "Operation: new = old * old", monkey -> %{monkey | op: fn x -> x * x end}
+      "Operation: new = old " <> op, monkey -> %{monkey | op: parse_op(op)}
+      "Test: divisible by " <> n, monkey -> %{monkey | test: parse_test(n)}
+      "If true: throw to monkey " <> n, monkey -> %{monkey | true_target: String.to_integer(n)}
+      "If false: throw to monkey " <> n, monkey -> %{monkey | false_target: String.to_integer(n)}
+    end)
+  end
+
+  def parse_id(str), do: str |> String.at(0) |> String.to_integer()
+
+  def parse_test(modulo) do
+    fn x -> rem(x, String.to_integer(modulo)) == 0 end
+  end
+
+  def parse_items(str) do
+    str
+    |> String.split(", ", trim: true)
+    |> Enum.map(&String.to_integer/1)
+  end
+
+  def parse_op("* " <> n), do: fn old -> old * String.to_integer(n) end
+  def parse_op("+ " <> n), do: fn old -> old + String.to_integer(n) end
+end
+
+monkeys = Input.load(test_input)
+Monkey.inspect(monkeys[2], 97)
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def solve(input) do
+    monkeys = Input.load(input)
+
+    1..20
+    |> Enum.reduce(monkeys, fn _, monkeys -> do_round(monkeys) end)
+    |> Enum.map(fn {_, m} -> m.inspections end)
+    |> Enum.sort()
+    |> Enum.reverse()
+    |> Enum.take(2)
+    |> Enum.product()
+    |> dbg()
+  end
+
+  def do_round(monkeys) when is_map(monkeys) do
+    ids = Map.keys(monkeys) |> Enum.sort()
+
+    Enum.reduce(ids, monkeys, fn i, monkeys ->
+      m = monkeys[i]
+
+      Enum.reduce(m.items, monkeys, fn item, monkeys ->
+        m = monkeys[i]
+        {m, worry_level, id} = Monkey.inspect(m, item)
+        monkeys = Map.put(monkeys, m.id, %{m | items: Enum.drop(m.items, 1)})
+
+        new_items = monkeys[id].items ++ [worry_level]
+        new_monkey = %{monkeys[id] | items: new_items}
+
+        Map.put(monkeys, id, new_monkey)
+      end)
+    end)
+  end
+end
+```
+
+```elixir
+Part1.solve(input)
+```
+
+## Part 2
+
+```elixir
+defmodule Part2 do
+  def solve(input) do
+    monkeys = Input.load(input)
+
+    1..10_000
+    |> Enum.reduce(monkeys, fn _, monkeys -> do_round(monkeys) end)
+    |> Enum.map(fn {_, m} -> m.inspections end)
+    |> Enum.sort()
+    |> Enum.reverse()
+    |> Enum.take(2)
+    |> Enum.product()
+  end
+
+  def do_round(monkeys) when is_map(monkeys) do
+    ids = Map.keys(monkeys) |> Enum.sort()
+
+    Enum.reduce(ids, monkeys, fn i, monkeys ->
+      m = monkeys[i]
+
+      Enum.reduce(m.items, monkeys, fn item, monkeys ->
+        m = monkeys[i]
+        {m, worry_level, id} = Monkey.inspect(m, item, 1)
+        monkeys = Map.put(monkeys, m.id, %{m | items: Enum.drop(m.items, 1)})
+
+        new_items = monkeys[id].items ++ [worry_level]
+        new_monkey = %{monkeys[id] | items: new_items}
+
+        Map.put(monkeys, id, new_monkey)
+      end)
+    end)
+  end
+end
+```
+
+```elixir
+Part2.solve(test_input)
+```
