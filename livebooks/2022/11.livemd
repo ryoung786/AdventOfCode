@@ -52,10 +52,18 @@ Monkey 3:
 
 ```elixir
 defmodule Monkey do
-  defstruct id: 0, items: [], op: nil, test: nil, true_target: 0, false_target: 0, inspections: 0
+  defstruct id: 0,
+            items: [],
+            op: nil,
+            mod: 1,
+            test: nil,
+            true_target: 0,
+            false_target: 0,
+            inspections: 0
 
-  def inspect(monkey, worry_level, worry_divisor \\ 3) do
+  def inspect(monkey, worry_level, gcd, worry_divisor \\ 3) do
     worry_level = (monkey.op.(worry_level) / worry_divisor) |> floor()
+    worry_level = rem(worry_level, gcd)
     target = if monkey.test.(worry_level), do: monkey.true_target, else: monkey.false_target
 
     m =
@@ -82,13 +90,26 @@ defmodule Input do
     |> String.split("\n", trim: true)
     |> Enum.map(&String.trim/1)
     |> Enum.reduce(%Monkey{}, fn
-      "Monkey " <> n, monkey -> %{monkey | id: parse_id(n)}
-      "Starting items: " <> items, monkey -> %{monkey | items: parse_items(items)}
-      "Operation: new = old * old", monkey -> %{monkey | op: fn x -> x * x end}
-      "Operation: new = old " <> op, monkey -> %{monkey | op: parse_op(op)}
-      "Test: divisible by " <> n, monkey -> %{monkey | test: parse_test(n)}
-      "If true: throw to monkey " <> n, monkey -> %{monkey | true_target: String.to_integer(n)}
-      "If false: throw to monkey " <> n, monkey -> %{monkey | false_target: String.to_integer(n)}
+      "Monkey " <> n, monkey ->
+        %{monkey | id: parse_id(n)}
+
+      "Starting items: " <> items, monkey ->
+        %{monkey | items: parse_items(items)}
+
+      "Operation: new = old * old", monkey ->
+        %{monkey | op: fn x -> x * x end}
+
+      "Operation: new = old " <> op, monkey ->
+        %{monkey | op: parse_op(op)}
+
+      "Test: divisible by " <> n, monkey ->
+        monkey |> Map.put(:test, parse_test(n)) |> Map.put(:mod, String.to_integer(n))
+
+      "If true: throw to monkey " <> n, monkey ->
+        %{monkey | true_target: String.to_integer(n)}
+
+      "If false: throw to monkey " <> n, monkey ->
+        %{monkey | false_target: String.to_integer(n)}
     end)
   end
 
@@ -107,9 +128,6 @@ defmodule Input do
   def parse_op("* " <> n), do: fn old -> old * String.to_integer(n) end
   def parse_op("+ " <> n), do: fn old -> old + String.to_integer(n) end
 end
-
-monkeys = Input.load(test_input)
-Monkey.inspect(monkeys[2], 97)
 ```
 
 ## Part 1
@@ -126,10 +144,11 @@ defmodule Part1 do
     |> Enum.reverse()
     |> Enum.take(2)
     |> Enum.product()
-    |> dbg()
+    |> dbg(charlists: :as_lists)
   end
 
   def do_round(monkeys) when is_map(monkeys) do
+    gcd = get_gcd(monkeys)
     ids = Map.keys(monkeys) |> Enum.sort()
 
     Enum.reduce(ids, monkeys, fn i, monkeys ->
@@ -137,7 +156,7 @@ defmodule Part1 do
 
       Enum.reduce(m.items, monkeys, fn item, monkeys ->
         m = monkeys[i]
-        {m, worry_level, id} = Monkey.inspect(m, item)
+        {m, worry_level, id} = Monkey.inspect(m, item, gcd)
         monkeys = Map.put(monkeys, m.id, %{m | items: Enum.drop(m.items, 1)})
 
         new_items = monkeys[id].items ++ [worry_level]
@@ -146,6 +165,12 @@ defmodule Part1 do
         Map.put(monkeys, id, new_monkey)
       end)
     end)
+  end
+
+  def get_gcd(monkeys) do
+    monkeys
+    |> Enum.map(fn {_id, m} -> m.mod end)
+    |> Enum.product()
   end
 end
 ```
@@ -172,13 +197,14 @@ defmodule Part2 do
 
   def do_round(monkeys) when is_map(monkeys) do
     ids = Map.keys(monkeys) |> Enum.sort()
+    gcd = Part1.get_gcd(monkeys)
 
     Enum.reduce(ids, monkeys, fn i, monkeys ->
       m = monkeys[i]
 
       Enum.reduce(m.items, monkeys, fn item, monkeys ->
         m = monkeys[i]
-        {m, worry_level, id} = Monkey.inspect(m, item, 1)
+        {m, worry_level, id} = Monkey.inspect(m, item, gcd, 1)
         monkeys = Map.put(monkeys, m.id, %{m | items: Enum.drop(m.items, 1)})
 
         new_items = monkeys[id].items ++ [worry_level]
@@ -192,5 +218,5 @@ end
 ```
 
 ```elixir
-Part2.solve(test_input)
+Part2.solve(input)
 ```
