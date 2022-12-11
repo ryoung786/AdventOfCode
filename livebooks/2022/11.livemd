@@ -133,22 +133,21 @@ end
 ## Part 1
 
 ```elixir
-defmodule Part1 do
-  def solve(input) do
+defmodule MonkeyBusiness do
+  def calc(input, num_rounds, worry_divisor) do
     monkeys = Input.load(input)
+    gcd = get_gcd(monkeys)
 
-    1..20
-    |> Enum.reduce(monkeys, fn _, monkeys -> do_round(monkeys) end)
+    1..num_rounds
+    |> Enum.reduce(monkeys, fn _, monkeys -> do_round(monkeys, gcd, worry_divisor) end)
     |> Enum.map(fn {_, m} -> m.inspections end)
     |> Enum.sort()
     |> Enum.reverse()
     |> Enum.take(2)
     |> Enum.product()
-    |> dbg(charlists: :as_lists)
   end
 
-  def do_round(monkeys) when is_map(monkeys) do
-    gcd = get_gcd(monkeys)
+  def do_round(monkeys, gcd, worry_divisor) do
     ids = Map.keys(monkeys) |> Enum.sort()
 
     Enum.reduce(ids, monkeys, fn i, monkeys ->
@@ -156,7 +155,7 @@ defmodule Part1 do
 
       Enum.reduce(m.items, monkeys, fn item, monkeys ->
         m = monkeys[i]
-        {m, worry_level, id} = Monkey.inspect(m, item, gcd)
+        {m, worry_level, id} = Monkey.inspect(m, item, gcd, worry_divisor)
         monkeys = Map.put(monkeys, m.id, %{m | items: Enum.drop(m.items, 1)})
 
         new_items = monkeys[id].items ++ [worry_level]
@@ -176,47 +175,11 @@ end
 ```
 
 ```elixir
-Part1.solve(input)
+MonkeyBusiness.calc(input, 20, 3)
 ```
 
 ## Part 2
 
 ```elixir
-defmodule Part2 do
-  def solve(input) do
-    monkeys = Input.load(input)
-
-    1..10_000
-    |> Enum.reduce(monkeys, fn _, monkeys -> do_round(monkeys) end)
-    |> Enum.map(fn {_, m} -> m.inspections end)
-    |> Enum.sort()
-    |> Enum.reverse()
-    |> Enum.take(2)
-    |> Enum.product()
-  end
-
-  def do_round(monkeys) when is_map(monkeys) do
-    ids = Map.keys(monkeys) |> Enum.sort()
-    gcd = Part1.get_gcd(monkeys)
-
-    Enum.reduce(ids, monkeys, fn i, monkeys ->
-      m = monkeys[i]
-
-      Enum.reduce(m.items, monkeys, fn item, monkeys ->
-        m = monkeys[i]
-        {m, worry_level, id} = Monkey.inspect(m, item, gcd, 1)
-        monkeys = Map.put(monkeys, m.id, %{m | items: Enum.drop(m.items, 1)})
-
-        new_items = monkeys[id].items ++ [worry_level]
-        new_monkey = %{monkeys[id] | items: new_items}
-
-        Map.put(monkeys, id, new_monkey)
-      end)
-    end)
-  end
-end
-```
-
-```elixir
-Part2.solve(input)
+MonkeyBusiness.calc(input, 10_000, 1)
 ```
