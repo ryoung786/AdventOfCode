@@ -231,10 +231,25 @@ defmodule Part2 do
   end
 
   def solve_vega_lite(input) do
-    pixel_array(input)
+    data =
+      pixel_array(input)
+      |> Enum.chunk_every(40)
+      |> Enum.with_index()
+      |> Enum.map(fn {row, r} ->
+        for {is_on, c} <- Enum.with_index(row),
+            do: %{lit: is_on, x: c, y: r}
+      end)
+      |> List.flatten()
+      |> Enum.filter(fn m -> m.lit end)
+
+    Vl.new()
+    |> Vl.data_from_values(data)
+    |> Vl.mark(:rect)
+    |> Vl.encode_field(:x, "x")
+    |> Vl.encode_field(:y, "y")
+    |> Vl.en()
   end
 end
 
-Part2.solve(input)
-# Part2.solve_vega_lite(input)
+Part2.solve_vega_lite(input)
 ```
