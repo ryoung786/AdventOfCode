@@ -1,0 +1,111 @@
+# Day 13
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 13
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+[1,1,3,1,1]
+[1,1,5,1,1]
+
+[[1],[2,3,4]]
+[[1],4]
+
+[9]
+[[8,7,6]]
+
+[[4,4],4,4]
+[[4,4],4,4,4]
+
+[7,7,7,7]
+[7,7,7]
+
+[]
+[3]
+
+[[[]]]
+[[]]
+
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[1,[2,[3,[4,[5,6,0]]]],8,9]
+"""
+```
+
+## Part 1
+
+```elixir
+defmodule Foo do
+  def compare([left, right]), do: compare(left, right)
+
+  def compare(left, right) when is_integer(left) and is_integer(right) do
+    cond do
+      left < right -> :correct_order
+      left > right -> :incorrect_order
+      left == right -> :continue
+    end
+  end
+
+  def compare([], []), do: :continue
+  def compare([], right) when is_list(right), do: :correct_order
+  def compare(left, []) when is_list(left), do: :incorrect_order
+
+  def compare([left | lrest], [right | rrest]) do
+    case compare(left, right) do
+      :continue -> compare(lrest, rrest)
+      result -> result
+    end
+  end
+
+  def compare(left, right), do: compare(List.wrap(left), List.wrap(right))
+end
+```
+
+```elixir
+# input = test_input
+
+input
+|> String.split("\n\n", trim: true)
+|> Enum.with_index(1)
+|> Enum.map(fn {pair, i} ->
+  [l_str, r_str] = String.split(pair, "\n", trim: true)
+  {left, _} = Code.eval_string(l_str)
+  {right, _} = Code.eval_string(r_str)
+  {Foo.compare(left, right), i}
+end)
+|> Enum.filter(fn {result, _i} -> result == :correct_order end)
+|> Enum.map(fn {_, i} -> i end)
+|> Enum.sum()
+```
+
+## Part 2
+
+```elixir
+# input = test_input
+
+sorted =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.concat(["[[2]]", "[[6]]"])
+  |> Enum.map(fn str -> Code.eval_string(str) |> elem(0) end)
+  |> Enum.sort(fn left, right -> Foo.compare(left, right) == :correct_order end)
+
+i = Enum.find_index(sorted, fn x -> x == [[2]] end) + 1
+j = Enum.find_index(sorted, fn x -> x == [[6]] end) + 1
+
+i * j
+```
