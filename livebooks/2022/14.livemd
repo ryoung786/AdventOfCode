@@ -1,0 +1,175 @@
+# Day 14
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 14
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Input
+
+```elixir
+test_input = """
+498,4 -> 498,6 -> 496,6
+503,4 -> 502,4 -> 502,9 -> 494,9
+"""
+```
+
+```elixir
+defmodule Layout do
+  def build_map(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.reduce(%{}, fn line, stones -> parse_line(line, stones) end)
+    |> Map.new(fn {k, v} -> {k, Enum.uniq(v)} end)
+  end
+
+  def parse_line(str, stones) do
+    Regex.scan(~r/([0-9]+,[0-9]+)/, str)
+    |> Enum.map(fn [a, a] ->
+      [l, r] = a |> String.split(",") |> Enum.map(&String.to_integer/1)
+      {l, r}
+    end)
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.reduce(stones, fn
+      [{x, y1}, {x, y2}], ranges -> Map.update(ranges, x, [y1..y2], fn old -> [y1..y2 | old] end)
+      [{x1, y}, {x2, y}], ranges -> Map.update(ranges, y, [x1..x2], fn old -> [x1..x2 | old] end)
+    end)
+  end
+
+  def blocked?(point, stones, sands) do
+    stone?(point, stones) or sand?(point, sands)
+  end
+
+  def stone?({x, y}, stones) do
+    Enum.any?(Map.get(stones, x, []), fn range -> y in range end) or
+      Enum.any?(Map.get(stones, y, []), fn range -> x in range end)
+  end
+
+  def sand?(point, sands) do
+    point in sands
+  end
+
+  def abyss(stones) do
+    deepest =
+      stones
+      |> Map.keys()
+      |> Enum.reject(&(&1 > 300))
+      |> Enum.max()
+
+    deepest + 1
+  end
+
+  def rock_floor(stones) do
+    abyss(stones) + 1
+  end
+end
+```
+
+```elixir
+defmodule Sand do
+  @source {500, 0}
+
+  def drop(stones, sands) do
+    # {:ok, {stones, sands}} or
+    # {:abyss, {stones, sands}}
+
+    abyss = Layout.abyss(stones)
+    drop(stones, sands, abyss, @source)
+  end
+
+  def drop(stones, sands, abyss, {_x, abyss}) do
+    {:abyss, {stones, sands}}
+  end
+
+  def drop(stones, sands, abyss, {x, y}) do
+    cond do
+      not Layout.blocked?({x, y + 1}, stones, sands) ->
+        drop(stones, sands, abyss, {x, y + 1})
+
+      not Layout.blocked?({x - 1, y + 1}, stones, sands) ->
+        drop(stones, sands, abyss, {x - 1, y + 1})
+
+      not Layout.blocked?({x + 1, y + 1}, stones, sands) ->
+        drop(stones, sands, abyss, {x + 1, y + 1})
+
+      true ->
+        {:ok, {stones, [{x, y} | sands]}}
+    end
+  end
+end
+```
+
+## Part 1
+
+```elixir
+# input = test_input
+stones = Layout.build_map(input)
+
+Enum.reduce_while(1..999_999, [], fn _i, sands ->
+  case Sand.drop(stones, sands) do
+    {:ok, {_, sands}} -> {:cont, sands}
+    {:abyss, {_, sands}} -> {:halt, sands}
+    _ -> {:halt, "what??"}
+  end
+end)
+|> Enum.count()
+```
+
+## Part 2
+
+```elixir
+defmodule Sand2 do
+  @source {500, 0}
+
+  def drop(stones, sands) do
+    if @source in sands,
+      do: {:plugged, sands},
+      else: {:ok, drop(stones, sands, @source)}
+  end
+
+  def drop(stones, sands, {x, y}) do
+    cond do
+      not Layout.blocked?({x, y + 1}, stones, sands) ->
+        drop(stones, sands, {x, y + 1})
+
+      not Layout.blocked?({x - 1, y + 1}, stones, sands) ->
+        drop(stones, sands, {x - 1, y + 1})
+
+      not Layout.blocked?({x + 1, y + 1}, stones, sands) ->
+        drop(stones, sands, {x + 1, y + 1})
+
+      true ->
+        [{x, y} | sands]
+    end
+  end
+end
+```
+
+This is slooow (~4 minutes).  To improve, we should not calculate the falling sand path each time and instead start from the previous grains penultimate position.
+
+```elixir
+# input = test_input
+
+stones = Layout.build_map(input)
+y_floor = Layout.rock_floor(stones)
+stones = Map.put_new(stones, y_floor, [-99_999..99_999])
+
+Enum.reduce_while(1..999_999, [], fn i, sands ->
+  case Sand2.drop(stones, sands) do
+    {:plugged, sands} -> {:halt, sands}
+    {:ok, sands} -> {:cont, sands}
+  end
+end)
+|> Enum.count()
+```
