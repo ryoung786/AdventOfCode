@@ -1,0 +1,80 @@
+# Day 18
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.2"},
+  {:vega_lite, "~> 0.1.6"},
+  {:kino_vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+
+day = 18
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2022/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Part 1
+
+```elixir
+test_input = """
+2,2,2
+1,2,2
+3,2,2
+2,1,2
+2,3,2
+2,2,1
+2,2,3
+2,2,4
+2,2,6
+1,2,5
+3,2,5
+2,1,5
+2,3,5
+"""
+```
+
+```elixir
+to_xyz = fn line ->
+  [x, y, z] = String.split(line, ",", trim: true)
+  {String.to_integer(x), String.to_integer(y), String.to_integer(z)}
+end
+
+to_xyz.("4,5,6")
+```
+
+```elixir
+exposed_surfaces = fn cubes, {x, y, z} ->
+  6 -
+    Enum.count(cubes, fn
+      {^x, ^y, ^z} -> false
+      {^x, ^y, z2} -> abs(z - z2) == 1
+      {^x, y2, ^z} -> abs(y - y2) == 1
+      {x2, ^y, ^z} -> abs(x - x2) == 1
+      _ -> false
+    end)
+end
+
+cubes = [{1, 1, 1}, {2, 1, 1}]
+exposed_surfaces.(cubes, {2, 3, 1})
+```
+
+```elixir
+# input = test_input
+
+cubes =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.map(&to_xyz.(&1))
+
+Enum.map(cubes, &exposed_surfaces.(cubes, &1))
+|> Enum.sum()
+```
+
+## Part 2
+
+```elixir
+
+```
