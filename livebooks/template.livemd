@@ -63,11 +63,19 @@ end
 # |> AOC.submit(day, part: 1)
 ```
 
-## Part 1
+## Test Input
 
 ```elixir
 day = AOC.day(1)
+day.input
+# AOC.submit(answer, day, part: 2)
+
+test_input = """
+
+"""
 ```
+
+## Part 1
 
 ```elixir
 defmodule P1 do
@@ -81,4 +89,4 @@ defmodule P2 do
 end
 ```
 
-<!-- livebook:{"offset":1804,"stamp":{"token":"XCP.hCbZvzficI3YuMPEZkOmo86dU1Dgi84We-Cq6bJ7pq9k7U_7kedoPxwtYFFFdxm8qVEld0RYnPUrp5a7L-sFp3pATabtoLNpm4aumgwpc99j-NsatP0","version":2}} -->
+<!-- livebook:{"offset":1887,"stamp":{"token":"XCP.3t9rpdKi3d2LnKsxQP1E3-UG-A5pBFupl6cn8zpYNNz-YRn2K0W_ZTDFUNqCFat83flvWHCl4S28Z7BicDAa5Dnt0jFnFqekouXXmbnEBvoCCWToXsU","version":2}} -->
