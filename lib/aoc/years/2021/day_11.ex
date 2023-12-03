@@ -54,7 +54,7 @@ defmodule Aoc.Year2021.Day11 do
   def flash(%Matrix{} = m, [{xy, _} | to_process]) do
     neighbors =
       Matrix.all_neighbors(m, xy)
-      |> Map.map(fn {_xy, val} -> inc(val) end)
+      |> Map.new(fn {_xy, val} -> inc(val) end)
 
     new_flash = Enum.filter(neighbors, fn {_xy, val} -> val == 10 end)
 

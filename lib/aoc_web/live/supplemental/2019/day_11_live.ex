@@ -17,47 +17,33 @@ defmodule AocWeb.Supplemental.Year2019.Day11Live do
 
   @impl true
   def render(assigns) do
-    ~L"""
+    ~H"""
     <svg class="y2019_11" width="600" height="600" viewbox="-75 -50 100 100">
-
       <mask id="robot-path" xmaskUnits="userSpaceOnUse">
-        <path class="clip" d="<%= @path %>" fill="none" stroke="white" />
+        <path class="clip" d={@path} fill="none" stroke="white" />
       </mask>
       <g class="panels" mask="url(#robot-path)">
-        <%= for {{x,y}, 1} <- @robot.panels do %>
-          <rect x="<%= x %>" y="<%= y %>" width="1" height="1" fill="white" />
-        <% end %>
+        <rect :for={{{x, y}, 1} <- @robot.panels} x={x} y={y} width="1" height="1" fill="white" />
       </g>
 
       <%= if @path != "" do %>
         <circle r="3" fill="blue">
-          <animateMotion dur="10s"
-                         fill="freeze"
-                         path="<%= @path %>" />
+          <animateMotion dur="10s" fill="freeze" path={@path} />
         </circle>
       <% end %>
     </svg>
 
-
     <svg class="y2019_11" width="600" height="100" viewbox="0 -1 40 9">
-
       <mask id="robot-path2" xmaskUnits="userSpaceOnUse">
-        <path class="clip2" d="<%= @path2 %>" fill="none" stroke="white" />
+        <path class="clip2" d={@path2} fill="none" stroke="white" />
       </mask>
       <g class="panels" mask="url(#robot-path2)">
-        <%= for {{x,y}, 1} <- @robot2.panels do %>
-          <rect x="<%= x %>" y="<%= y %>" width="1" height="1" fill="white" />
-        <% end %>
+        <rect :for={{{x, y}, 1} <- @robot2.panels} x={x} y={y} width="1" height="1" fill="white" />
       </g>
 
-
-      <%= if @path2 != "" do %>
-        <circle r="1" fill="blue">
-          <animateMotion dur="10s"
-                         fill="freeze"
-                         path="<%= @path2 %>" />
-        </circle>
-      <% end %>
+      <circle :if={@path2 != ""} r="1" fill="blue">
+        <animateMotion dur="10s" fill="freeze" path={@path2} />
+      </circle>
     </svg>
     """
   end
@@ -65,7 +51,12 @@ defmodule AocWeb.Supplemental.Year2019.Day11Live do
   @impl true
   def handle_info({:solved, {robot1, robot2}}, socket) do
     {:noreply,
-     assign(socket, robot: robot1, path: svg_path(robot1), robot2: robot2, path2: svg_path(robot2))}
+     assign(socket,
+       robot: robot1,
+       path: svg_path(robot1),
+       robot2: robot2,
+       path2: svg_path(robot2)
+     )}
   end
 
   def svg_path(%{path: hist}) do

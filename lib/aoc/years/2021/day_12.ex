@@ -26,7 +26,7 @@ defmodule Aoc.Year2021.Day12 do
       |> Map.update(b, [a], fn neighbors -> [a | neighbors] end)
     end)
     # except for start, that is a one-way edge
-    |> Map.map(fn {_, neighbors} -> List.delete(neighbors, "start") end)
+    |> Enum.map(fn {_, neighbors} -> List.delete(neighbors, "start") end)
   end
 
   defp cave_size(cave), do: if(String.match?(cave, ~r/^[a-z]/), do: :small, else: :large)

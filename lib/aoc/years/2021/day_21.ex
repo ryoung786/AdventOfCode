@@ -90,7 +90,7 @@ defmodule Aoc.Year2021.Day21 do
       _ ->
         game
         |> dirac_possibilities()
-        |> Map.map(fn {_k, v} -> v * count end)
+        |> Map.new(fn {_k, v} -> v * count end)
         |> Map.merge(games, fn _, v1, v2 -> v1 + v2 end)
         |> count_wins(p1_wins, p2_wins)
     end

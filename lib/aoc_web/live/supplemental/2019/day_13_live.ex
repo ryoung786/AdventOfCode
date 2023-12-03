@@ -16,16 +16,21 @@ defmodule AocWeb.Supplemental.Year2019.Day13Live do
 
   @impl true
   def render(assigns) do
-    ~L"""
-     <div class="y2019_13" phx-window-keydown="joystick" phx-throttle="100">
-       <button class="button" phx-click="start">Start Game</button>
-       <h3>Score: <%= @score %></h3>
-       <svg width="600" height="300" viewbox="0 0 40 20">
-         <%= for {{x,y}, tile} <- @display do %>
-         <rect x="<%= x %>" y="<%= y %>" width="1" height="1" fill="<%= tile_color(tile) %>" />
-         <% end %>
-       </svg>
-     </div>
+    ~H"""
+    <div class="y2019_13" phx-window-keydown="joystick" phx-throttle="100">
+      <button class="button" phx-click="start">Start Game</button>
+      <h3>Score: <%= @score %></h3>
+      <svg width="600" height="300" viewbox="0 0 40 20">
+        <rect
+          :for={{{x, y}, tile} <- @display}
+          x={x}
+          y={y}
+          width="1"
+          height="1"
+          fill={tile_color(tile)}
+        />
+      </svg>
+    </div>
     """
   end
 

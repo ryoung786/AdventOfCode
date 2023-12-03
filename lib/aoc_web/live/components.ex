@@ -1,14 +1,15 @@
 defmodule AocWeb.Components do
-  use AocWeb, :component
+  use Phoenix.Component
 
   @url_base "https://github.com/ryoung786/AdventOfCode/blob/main/lib/aoc/years"
 
   def answer(assigns) do
     ~H"""
     <section class="phx-hero">
-      <h1><%= gettext "Day %{day}", day: @day %></h1>
+      <h1>Day: <%= @day %></h1>
       <p>
-        <a href={official_site(@year, @day)}>problem</a> :: <a href={gh_path(@year, @day)}>solution</a>
+        <a href={official_site(@year, @day)}>problem</a>
+        :: <a href={gh_path(@year, @day)}>solution</a>
       </p>
       <p>Part one: <%= @part_one %></p>
       <p>Part two: <%= @part_two %></p>

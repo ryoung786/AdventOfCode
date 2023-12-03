@@ -4,19 +4,15 @@
 </section>
 
 <ul class="year-selection">
-  <%= for year <- @years do %>
-    <li class={if @selected_year == year, do: "active"}>
-      <%= live_patch year, to: "/#{year}" %>
-    </li>
-  <% end %>
+  <li :for={year <- @years} class={if @selected_year == year, do: "active"}>
+    <.link patch={~p"/#{year}"}><%= year %></.link>
+  </li>
 </ul>
 
 <section class={"days year-#{@selected_year}"}>
   <ul>
-    <%= for day <- 1..25 do %>
-      <li>
-        <%= live_redirect "#{day}", to: Routes.day_path(@socket, :index, @selected_year, day) %>
-      </li>
-    <% end %>
+    <li :for={day <- 1..25}>
+      <.link patch={~p"/#{@selected_year}/#{day}"}><%= day %></.link>
+    </li>
   </ul>
 </section>

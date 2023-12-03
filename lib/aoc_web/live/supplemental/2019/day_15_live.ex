@@ -32,37 +32,37 @@ defmodule AocWeb.Supplemental.Year2019.Day15Live do
   @impl true
   def render(assigns) do
     ~H"""
-     <div class="y2019_15">
-       <div class="answers">
-         <h3>Shortest path: <%= if @astar_path != [], do: Enum.count(@astar_path) %></h3>
-         <%= if @gas_minutes > 0 do %>
-           <h3>Minutes gas expanding: <%= @gas_minutes %></h3>
-         <% end %>
-       </div>
-       <svg width="600" height="600" viewbox="-22 -22 42 42">
-         <%= for {{x,y}, :wall} <- @map do %>
-           <path class="wall" d={"M#{x} #{y} L#{x} #{y}"} stroke="black" stroke-linecap="square" />
-         <% end %>
+    <div class="y2019_15">
+      <div class="answers">
+        <h3>Shortest path: <%= if @astar_path != [], do: Enum.count(@astar_path) %></h3>
+        <%= if @gas_minutes > 0 do %>
+          <h3>Minutes gas expanding: <%= @gas_minutes %></h3>
+        <% end %>
+      </div>
+      <svg width="600" height="600" viewbox="-22 -22 42 42">
+        <%= for {{x,y}, :wall} <- @map do %>
+          <path class="wall" d={"M#{x} #{y} L#{x} #{y}"} stroke="black" stroke-linecap="square" />
+        <% end %>
 
-         <% {x, y} = @xy %>
-         <path class="robot" d={"M#{x} #{y} L#{x} #{y}"} stroke="navy" stroke-linecap="square" />
+        <% {x, y} = @xy %>
+        <path class="robot" d={"M#{x} #{y} L#{x} #{y}"} stroke="navy" stroke-linecap="square" />
 
-         <%= if @astar_path != [] do %>
-           <path d={to_svg_path(@astar_path)} stroke="magenta" fill="none" stroke-linecap="square" />
-         <% end %>
+        <%= if @astar_path != [] do %>
+          <path d={to_svg_path(@astar_path)} stroke="magenta" fill="none" stroke-linecap="square" />
+        <% end %>
 
-         <%= for {x,y} <- @gas do %>
-           <path class="gas" d={"M#{x} #{y} L#{x} #{y}"} stroke="cyan" stroke-linecap="square" />
-         <% end %>
+        <%= for {x,y} <- @gas do %>
+          <path class="gas" d={"M#{x} #{y} L#{x} #{y}"} stroke="cyan" stroke-linecap="square" />
+        <% end %>
 
-         <%= if @o2 != nil do %>
-           <% {x, y} = @o2 %>
-           <path class="o2" d={"M#{x} #{y} L#{x} #{y}"} stroke="green" stroke-linecap="square" />
-         <% end %>
+        <%= if @o2 != nil do %>
+          <% {x, y} = @o2 %>
+          <path class="o2" d={"M#{x} #{y} L#{x} #{y}"} stroke="green" stroke-linecap="square" />
+        <% end %>
 
-         <path class="origin" d="M0 0 L0 0" stroke="brown" stroke-linecap="square" />
-       </svg>
-     </div>
+        <path class="origin" d="M0 0 L0 0" stroke="brown" stroke-linecap="square" />
+      </svg>
+    </div>
     """
   end
 

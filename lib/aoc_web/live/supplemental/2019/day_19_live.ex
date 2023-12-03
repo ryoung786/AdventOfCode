@@ -14,19 +14,23 @@ defmodule AocWeb.Supplemental.Year2019.Day19Live do
   @impl true
   def render(assigns) do
     ~H"""
-     <div class="y2019_15">
-       <div class="answers">
-       </div>
-       <svg width="600" height="600" viewbox="0 0 1200 1200">
-         <%= for {y, {xmin, xmax}} <- @map do %>
-           <path class="beam" d={"M#{xmin} #{y} h#{1 + xmax - xmin} v1 h-#{1 + xmax - xmin} z"} stroke="none" fill="tomato"  />
-         <% end %>
+    <div class="y2019_15">
+      <div class="answers"></div>
+      <svg width="600" height="600" viewbox="0 0 1200 1200">
+        <%= for {y, {xmin, xmax}} <- @map do %>
+          <path
+            class="beam"
+            d={"M#{xmin} #{y} h#{1 + xmax - xmin} v1 h-#{1 + xmax - xmin} z"}
+            stroke="none"
+            fill="tomato"
+          />
+        <% end %>
 
-         <%= if @sleigh_x != nil do %>
-           <rect x={@sleigh_x} y={@sleigh_y} width="100" height="100" fill="none" stroke="black"/>
-         <% end %>
-       </svg>
-     </div>
+        <%= if @sleigh_x != nil do %>
+          <rect x={@sleigh_x} y={@sleigh_y} width="100" height="100" fill="none" stroke="black" />
+        <% end %>
+      </svg>
+    </div>
     """
   end
 

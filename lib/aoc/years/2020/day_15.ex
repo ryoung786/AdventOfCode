@@ -1,6 +1,5 @@
 defmodule Aoc.Year2020.Day15 do
   use Aoc.DayBase
-  use Bitwise
 
   def parse_input(str), do: str |> String.split(",") |> Enum.map(&String.to_integer/1)
 
