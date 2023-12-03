@@ -11,34 +11,21 @@ alias VegaLite, as: Vl
 
 defmodule AOC do
   @aoc_session System.fetch_env!("LB_AOC_SESSION")
-  def day(day, year \\ 2023) when day in 1..25 do
-    req =
-      Req.new(
-        base_url: "https://adventofcode.com/#{year}/day/#{day}",
-        headers: [cookie: "session=#{@aoc_session}"]
-      )
 
-    %{
-      req: req,
-      input: Req.get!(req, url: "/input").body,
-      year: year,
-      day: day
-    }
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
   end
 
-  def submit(answer, %{req: req}, opts \\ []) do
-    part = Keyword.get(opts, :part, 1)
-    body = Req.get!(req).body
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
 
-    actual_level =
-      cond do
-        body =~ "Both parts of this puzzle are complete!" -> 3
-        body =~ "The first half of this puzzle is complete!" -> 2
-        :else -> 1
-      end
-
-    with true <- part in 1..2 || {:error, "Part must be 1 or 2", answer},
-         true <- part == actual_level || {:error, level_error_msg(actual_level), answer} do
+    if !part_already_completed?(part, req) do
       body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
 
       cond do
@@ -47,32 +34,28 @@ defmodule AOC do
         body =~ "your answer is too high" -> {:too_high, answer}
         :else -> {:incorrect, answer}
       end
+    else
+      {:already_completed_part, answer}
     end
   end
 
-  defp level_error_msg(3), do: "Already completed both parts."
-  defp level_error_msg(2), do: "Already completed part 1. Please submit part 2."
-  defp level_error_msg(1), do: "Please submit part 1."
-end
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
 
-# Example usage:
-#
-# day = AOC.day(22)
-# day.input
-# |> calculate_answer()
-# |> AOC.submit(day, part: 1)
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+end
 ```
 
-## Test Input
+## Day
 
 ```elixir
-day = AOC.day(1)
+{:ok, day} = AOC.day(1, 2023)
 day.input
-# AOC.submit(answer, day, part: 2)
-
-test_input = """
-
-"""
 ```
 
 ## Part 1
@@ -89,4 +72,4 @@ defmodule P2 do
 end
 ```
 
-<!-- livebook:{"offset":1887,"stamp":{"token":"XCP.3t9rpdKi3d2LnKsxQP1E3-UG-A5pBFupl6cn8zpYNNz-YRn2K0W_ZTDFUNqCFat83flvWHCl4S28Z7BicDAa5Dnt0jFnFqekouXXmbnEBvoCCWToXsU","version":2}} -->
+<!-- livebook:{"offset":1648,"stamp":{"token":"XCP.rg_4a6tn64tLpbXnLzDj4Bj5Xtr3V_x7P4pPLoY078TyDMOoydJEkjRn_5GFkVJ1v7zAVb8t-fOCLj1lGz8b62vXXNLUdH33ZSgCcIkloCNDK2pDpj4","version":2}} -->
