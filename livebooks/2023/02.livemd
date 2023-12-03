@@ -54,57 +54,6 @@ end
 ## Day
 
 ```elixir
-defmodule AOC do
-  @aoc_session System.fetch_env!("LB_AOC_SESSION")
-
-  def day(day, year) when day in 1..25 do
-    headers = [cookie: "session=#{@aoc_session}"]
-    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
-    input = Req.get!(req, url: "/input").body
-
-    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
-      do: {:error, "Day #{day} hasn't been unlocked yet"},
-      else: {:ok, %{req: req, input: input}}
-  end
-
-  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
-    part = if part == :part_2, do: 2, else: 1
-
-    if !part_already_completed?(part, req) do
-      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
-
-      cond do
-        body =~ "That's the right answer" -> {:correct, answer}
-        body =~ "your answer is too low" -> {:too_low, answer}
-        body =~ "your answer is too high" -> {:too_high, answer}
-        :else -> {:incorrect, answer}
-      end
-    else
-      {:already_completed_part, answer}
-    end
-  end
-
-  defp part_already_completed?(part, req) do
-    body = Req.get!(req).body
-
-    cond do
-      body =~ "Both parts of this puzzle are complete!" -> true
-      body =~ "The first half of this puzzle is complete!" -> part == 1
-      :else -> false
-    end
-  end
-end
-```
-
-```elixir
-{:ok, day} = AOC.day(2, 2023)
-
-day.input
-|> solve()
-|> AOC.submit(day, :part_1)
-```
-
-```elixir
 {:ok, day} = AOC.day(2, 2023)
 day.input
 ```
@@ -202,15 +151,4 @@ Vl.new(width: 798, height: 300)
 )
 ```
 
-<!-- livebook:{"attrs":{"chart_title":null,"height":null,"layers":[{"active":true,"chart_type":"line","color_field":"color","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":"nominal","data_variable":"data","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"game_id","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"quantitative","y_field":"cubes","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.Vl","width":750},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
-
-```elixir
-Vl.new(width: 750)
-|> Vl.data_from_values(data, only: ["game_id", "cubes", "color"])
-|> Vl.mark(:line)
-|> Vl.encode_field(:x, "game_id", type: :quantitative)
-|> Vl.encode_field(:y, "cubes", type: :quantitative)
-|> Vl.encode_field(:color, "color", type: :nominal)
-```
-
-<!-- livebook:{"offset":6038,"stamp":{"token":"XCP.KxFLHUwy4QhJurRKtsAI05bgtfGqF7DXgQ785ZyEiVvn4t5gdJxyOOD_lN8J6uQvXe6TSe6vXQxoTgcBUEdL5wWqchTGPhzAiv5PB9fuv3FScZsV_Ig","version":2}} -->
+<!-- livebook:{"offset":3614,"stamp":{"token":"XCP.c21v67KQT4BGsTgit6_kDKL7UA9JEaSjk5rGhHA29vO8Sw-V8zZ7tOOLf5ADjnoh2jMru0MdyIhtenDcsu-ZsSbX4UaxwImwjz3nk4RoViZrPO5rCqA","version":2}} -->
