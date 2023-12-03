@@ -58,6 +58,11 @@ end
 day.input
 ```
 
+```elixir
+test_input = """
+"""
+```
+
 ## Part 1
 
 ```elixir
@@ -72,4 +77,4 @@ defmodule P2 do
 end
 ```
 
-<!-- livebook:{"offset":1648,"stamp":{"token":"XCP.rg_4a6tn64tLpbXnLzDj4Bj5Xtr3V_x7P4pPLoY078TyDMOoydJEkjRn_5GFkVJ1v7zAVb8t-fOCLj1lGz8b62vXXNLUdH33ZSgCcIkloCNDK2pDpj4","version":2}} -->
+<!-- livebook:{"offset":1684,"stamp":{"token":"XCP.1Hc3LDJVFRtlm2juLoL1vRDOOOdmodkj31msvE63FNNpeYaoJH-fzNGBuNKX2KKbC9R3sZG33orgp2kH403S5xd4aa8_Nf1O9Dx1Adj1H8WIsZqfEpo","version":2}} -->
