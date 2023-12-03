@@ -1,0 +1,257 @@
+# 2023 Day 03
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+end
+```
+
+## Day
+
+```elixir
+{:ok, day} = AOC.day(3, 2023)
+day.input
+```
+
+```elixir
+test_input = """
+467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..
+"""
+```
+
+## Part 1
+
+You and the Elf eventually reach a gondola lift station; he says the gondola lift will take you up to the water source, but this is as far as he can bring you. You go inside.
+
+It doesn't take long to find the gondolas, but there seems to be a problem: they're not moving.
+
+"Aaah!"
+
+You turn around to see a slightly-greasy Elf with a wrench and a look of surprise. "Sorry, I wasn't expecting anyone! The gondola lift isn't working right now; it'll still be a while before I can fix it." You offer to help.
+
+The engineer explains that an engine part seems to be missing from the engine, but nobody can figure out which one. If you can add up all the part numbers in the engine schematic, it should be easy to work out which part is missing.
+
+The engine schematic (your puzzle input) consists of a visual representation of the engine. There are lots of numbers and symbols you don't really understand, but apparently any number adjacent to a symbol, even diagonally, is a "part number" and should be included in your sum. (Periods (.) do not count as a symbol.)
+
+Here is an example engine schematic:
+
+<pre>
+467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..
+</pre>
+
+In this schematic, two numbers are not part numbers because they are not adjacent to a symbol: 114 (top right) and 58 (middle right). Every other number is adjacent to a symbol and so is a part number; their sum is 4361.
+
+Of course, the actual engine schematic is much larger. What is the sum of all of the part numbers in the engine schematic?
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Approach
+
+We can find the `{x, y}` positions of every symbol and number in the schematic fairly easily.  For each number, we can see if there's a symbol in any of its adjacent cells.  If it is, we keep it for the sum.
+
+`Regex.scan/3` luckily does some heavy lifting for us.  It can return the start index and length of a matching pattern, which is exactly what we need for number positions.
+
+```elixir
+defmodule P1 do
+  def indexed_lines(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.with_index()
+  end
+
+  def symbol_positions(lines) do
+    lines
+    |> Enum.flat_map(fn {line, y} ->
+      Regex.scan(~r/[^\d\.]/, line, return: :index)
+      |> Enum.map(fn [{x, _}] -> {x, y} end)
+    end)
+    |> Map.new(&{&1, true})
+  end
+
+  def numbers(lines) do
+    Enum.flat_map(lines, fn {line, y} ->
+      pos =
+        Regex.scan(~r/\d+/, line, return: :index)
+        |> Enum.map(fn [{x, len}] -> {{x, y}, len} end)
+
+      nums = String.split(line, ~r/[^\d]/, trim: true) |> Enum.map(&String.to_integer/1)
+      Enum.zip(pos, nums)
+    end)
+  end
+
+  def solve(input) do
+    lines = indexed_lines(input)
+    symbol_positions = symbol_positions(lines)
+
+    numbers(lines)
+    |> Enum.map(fn {{{x, y}, len}, num} ->
+      if adjacent?(x, y, len, symbol_positions), do: num, else: 0
+    end)
+    |> Enum.sum()
+  end
+
+  def adjacent?(x, y, len, symbol_positions) do
+    Enum.any?(adjacent_coords(x, y, len), fn pos -> symbol_positions[pos] end)
+  end
+
+  def adjacent_coords(x, y, len) do
+    mid = [{x - 1, y}, {x + len, y}]
+    above = for a <- (x - 1)..(x + len), do: {a, y - 1}
+    below = for a <- (x - 1)..(x + len), do: {a, y + 1}
+    above ++ mid ++ below
+  end
+end
+```
+
+```elixir
+day.input
+|> P1.solve()
+```
+
+## Part 2
+
+The engineer finds the missing part and installs it in the engine! As the engine springs to life, you jump in the closest gondola, finally ready to ascend to the water source.
+
+You don't seem to be going very fast, though. Maybe something is still wrong? Fortunately, the gondola has a phone labeled "help", so you pick it up and the engineer answers.
+
+Before you can explain the situation, she suggests that you look out the window. There stands the engineer, holding a phone in one hand and waving with the other. You're going so slowly that you haven't even left the station. You exit the gondola.
+
+The missing part wasn't the only issue - one of the gears in the engine is wrong. A gear is any * symbol that is adjacent to exactly two part numbers. Its gear ratio is the result of multiplying those two numbers together.
+
+This time, you need to find the gear ratio of every gear and add them all up so that the engineer can figure out which gear needs to be replaced.
+
+Consider the same engine schematic again:
+
+<pre>
+467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..
+</pre>
+
+In this schematic, there are two gears. The first is in the top left; it has part numbers 467 and 35, so its gear ratio is 16345. The second gear is in the lower right; its gear ratio is 451490. (The * adjacent to 617 is not a gear because it is only adjacent to one part number.) Adding up all of the gear ratios produces 467835.
+
+What is the sum of all of the gear ratios in your engine schematic?
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Approach
+
+Our goal will be to build up a map of `gear position => [list of adjacent numbers]`.  If we have that, then we can iterate through it, reject any gears that don't have exactly 2 adjacent numbers, and sum their gear ratios.
+
+First we find the `{x, y}` position of each gear (`*`).  Then we find each number just like in `part 1`.  To build our map, for each number we look to see if there's a gear in each adjacent cell.  If so, add it to our map.
+
+```elixir
+defmodule P2 do
+  def gear_positions(lines) do
+    lines
+    |> Enum.flat_map(fn {line, y} ->
+      Regex.scan(~r/\*/, line, return: :index) |> Enum.map(fn [{x, _}] -> {x, y} end)
+    end)
+    |> Map.new(&{&1, true})
+  end
+
+  def numbers(lines, gears) do
+    P1.numbers(lines)
+    # build a map of %{gear_position => [adj_num1, adj_num2, ...]}
+    |> Enum.reduce(%{}, fn {{{x, y}, len}, num}, acc ->
+      # for each adjacent coord around the number, if there's a gear there, update our map
+      Enum.reduce(P1.adjacent_coords(x, y, len), acc, fn xy, acc ->
+        if gears[xy], do: Map.update(acc, xy, [num], &[num | &1]), else: acc
+      end)
+    end)
+  end
+
+  def gear_ratio(gear_position, numbers) do
+    lst = numbers[gear_position]
+    if Enum.count(lst) == 2, do: Enum.product(lst), else: 0
+  end
+
+  def solve(input) do
+    lines = P1.indexed_lines(input)
+    gears = gear_positions(lines)
+    numbers = numbers(lines, gears)
+
+    gears
+    |> Map.keys()
+    |> Enum.map(&gear_ratio(&1, numbers))
+    |> Enum.sum()
+  end
+end
+```
+
+```elixir
+test_input
+|> P2.solve()
+```
+
+<!-- livebook:{"offset":8206,"stamp":{"token":"XCP.Tpya4mHDzfKl62JAvNFr2Hz3usbhzUUw0YsACk3_7pWZ6Gz_FpTfAR7Ghx1bh-e9hHBj_JSWqfymkERN7VRZUXRizons8yWIL8HCXvvKObT3iqlPGE8","version":2}} -->
