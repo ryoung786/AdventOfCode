@@ -67,14 +67,30 @@ test_input = """
 
 ```elixir
 defmodule P1 do
+  def solve(input) do
+    input
+  end
 end
+```
+
+```elixir
+test_input
+|> P1.solve()
 ```
 
 ## Part 2
 
 ```elixir
 defmodule P2 do
+  def solve(input) do
+    input
+  end
 end
 ```
 
-<!-- livebook:{"offset":1684,"stamp":{"token":"XCP.1Hc3LDJVFRtlm2juLoL1vRDOOOdmodkj31msvE63FNNpeYaoJH-fzNGBuNKX2KKbC9R3sZG33orgp2kH403S5xd4aa8_Nf1O9Dx1Adj1H8WIsZqfEpo","version":2}} -->
+```elixir
+test_input
+|> P2.solve()
+```
+
+<!-- livebook:{"offset":1840,"stamp":{"token":"XCP.ogitnw59L7seDMaqM4BSpYpJRmkZq2Cs4XieI9MaGUeGP4adfRiZotz8hV4sXZSIH_bDgoJ5_n-NzWpSocdp2ovcbqiABAgto6GUDM9Bp-X7j-oGaCw","version":2}} -->
