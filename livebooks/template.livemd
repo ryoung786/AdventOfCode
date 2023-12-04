@@ -49,33 +49,28 @@ defmodule AOC do
     end
   end
 end
+
+{:ok, day} = AOC.day(1, 2023)
 ```
 
 ## Day
 
-```elixir
-{:ok, day} = AOC.day(1, 2023)
-day.input
-```
+## Part 1
 
 ```elixir
 test_input = """
 """
 ```
 
-## Part 1
-
 ```elixir
 defmodule P1 do
   def solve(input) do
     input
+    |> String.split("\n", trim: true)
   end
 end
-```
 
-```elixir
-test_input
-|> P1.solve()
+test_input |> P1.solve()
 ```
 
 ## Part 2
@@ -84,13 +79,11 @@ test_input
 defmodule P2 do
   def solve(input) do
     input
+    |> String.split("\n", trim: true)
   end
 end
+
+test_input |> P2.solve()
 ```
 
-```elixir
-test_input
-|> P2.solve()
-```
-
-<!-- livebook:{"offset":1840,"stamp":{"token":"XCP.ogitnw59L7seDMaqM4BSpYpJRmkZq2Cs4XieI9MaGUeGP4adfRiZotz8hV4sXZSIH_bDgoJ5_n-NzWpSocdp2ovcbqiABAgto6GUDM9Bp-X7j-oGaCw","version":2}} -->
+<!-- livebook:{"offset":1864,"stamp":{"token":"XCP.Cir1Ykgw_RZajrIbMHMPUGCXYoDZHIu4CPGgp1xSfYfslCpI7hDI6UzgWdoRpVjXetpHbSRK3wdWDGIZxvJuy787PtepXHU5xpv24kCwF4XhjWs6q_w","version":2}} -->

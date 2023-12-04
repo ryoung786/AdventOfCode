@@ -1,0 +1,139 @@
+# 2023 Day 04
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+end
+```
+
+## Day
+
+```elixir
+{:ok, day} = AOC.day(4, 2023)
+day.input
+```
+
+```elixir
+test_input = """
+Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
+Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
+Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
+Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
+Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
+"""
+```
+
+## Part 1
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(&score_line/1)
+    |> Enum.sum()
+  end
+
+  def score_line(card_str) do
+    count = number_of_matches(card_str)
+    if count > 0, do: 2 ** (count - 1), else: 0
+  end
+
+  def number_of_matches(card_str) do
+    [_, left, right] = String.split(card_str, ~r/[:|]/)
+    left = String.split(left, " ", trim: true) |> MapSet.new()
+    right = String.split(right, " ", trim: true) |> MapSet.new()
+    MapSet.intersection(left, right) |> Enum.count()
+  end
+end
+```
+
+```elixir
+test_input
+|> P1.solve()
+```
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    wins =
+      input
+      |> String.split("\n", trim: true)
+      |> Enum.map(&P1.number_of_matches/1)
+
+    wins = 1..Enum.count(wins) |> Enum.zip(wins) |> Map.new()
+
+    card_pile = Map.new(wins, fn {id, _} -> {id, 1} end)
+
+    1..Enum.count(wins)
+    |> Enum.reduce(card_pile, fn id, card_pile ->
+      inc_next_n_cards_by_x(id, wins[id], card_pile[id], card_pile)
+    end)
+    |> Map.values()
+    |> Enum.sum()
+  end
+
+  def inc_next_n_cards_by_x(_id, 0, _, cards), do: cards
+
+  def inc_next_n_cards_by_x(id, n, x, cards) do
+    Enum.reduce(1..n, cards, fn i, cards ->
+      Map.put(cards, i + id, cards[i + id] + x)
+    end)
+  end
+end
+```
+
+```elixir
+day.input
+|> P2.solve()
+```
+
+<!-- livebook:{"offset":3250,"stamp":{"token":"XCP.-J1rW8DUqE2Y-OrVJJKd-ZcpQ_ZVLm4SCxhfwBrCK7__IomAUlpGSpt_NnJSkHYhtlZaasI-C6rxuuUI4NGFjN_knoOvPTJQ9JmiOKAbdiCtdO0fP78","version":2}} -->
