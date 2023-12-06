@@ -1,4 +1,4 @@
-# Template
+# 2023 Day 06
 
 ```elixir
 Mix.install([
@@ -54,7 +54,7 @@ defmodule AOC do
   end
 end
 
-{:ok, day} = AOC.day(1, 2023)
+{:ok, day} = AOC.day(6, 2023)
 ```
 
 ## Day
@@ -63,6 +63,8 @@ end
 
 ```elixir
 test_input = """
+Time:      7  15   30
+Distance:  9  40  200
 """
 ```
 
@@ -71,7 +73,13 @@ defmodule P1 do
   def solve(input) do
     input
     |> String.split("\n", trim: true)
+    |> Enum.map(&AOC.nums/1)
+    |> Enum.zip()
+    |> Enum.map(&num_winners/1)
+    |> Enum.product()
   end
+
+  def num_winners({time, record}), do: Enum.count(0..time, &(time * &1 - &1 * &1 > record))
 end
 
 test_input |> P1.solve()
@@ -83,11 +91,21 @@ test_input |> P1.solve()
 defmodule P2 do
   def solve(input) do
     input
+    |> time_record_pair()
+    |> P1.num_winners()
+  end
+
+  def time_record_pair(input) do
+    input
     |> String.split("\n", trim: true)
+    |> Enum.map(fn str ->
+      str |> String.split(" ", trim: true) |> Enum.drop(1) |> Enum.join() |> String.to_integer()
+    end)
+    |> List.to_tuple()
   end
 end
 
 test_input |> P2.solve()
 ```
 
-<!-- livebook:{"offset":1967,"stamp":{"token":"XCP.FPN6dbaBIUWg-etX4O6ErkbpnKSZwCTOoYMJtTOIGnE5fd16wJFYTz3F2I7R-RkJxiEUb1ZifTAhTarLAfr53QRc1siYIRAYnXZb1Me3axysxkcmhGY","version":2}} -->
+<!-- livebook:{"offset":2463,"stamp":{"token":"XCP.XErJJD4cu9Qs3zq5p5EXMXwHLqcQ7CVbaV6gT-HK5Y4oy19h1ijJed-DkSGTFVyn9G8YchdFLwmbqRVFq4bzyzkLj9lHP2G1BWO0YbLRjQn0jC16ov4","version":2}} -->

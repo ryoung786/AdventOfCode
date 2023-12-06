@@ -1,14 +1,12 @@
 # Advent of Code
 
-## Livebooks
-
-### 2023
+## 2023
 
 * [Day 02](2023/02.livemd)
 * [Day 03](2023/03.livemd)
 * [Day 04](2023/04.livemd)
 
-### 2022
+## 2022
 
 * [Day 01](2022/1.livemd)
 * [Day 02](2022/2.livemd)
