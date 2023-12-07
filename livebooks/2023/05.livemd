@@ -1,0 +1,172 @@
+# 2023 Day 05
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+
+  def nums(str) do
+    Regex.scan(~r/\d+/, str) |> Enum.map(fn [x] -> String.to_integer(x) end)
+  end
+end
+
+{:ok, day} = AOC.day(5, 2023)
+```
+
+## Part 1
+
+```elixir
+test_input = """
+seeds: 79 14 55 13
+
+seed-to-soil map:
+50 98 2
+52 50 48
+
+soil-to-fertilizer map:
+0 15 37
+37 52 2
+39 0 15
+
+fertilizer-to-water map:
+49 53 8
+0 11 42
+42 0 7
+57 7 4
+
+water-to-light map:
+88 18 7
+18 25 70
+
+light-to-temperature map:
+45 77 23
+81 45 19
+68 64 13
+
+temperature-to-humidity map:
+0 69 1
+1 0 69
+
+humidity-to-location map:
+60 56 37
+56 93 4
+"""
+```
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    [seeds_str | maps_str] = input |> String.split("\n\n", trim: true)
+    seeds = AOC.nums(seeds_str)
+    maps = Enum.map(maps_str, &str_to_map/1)
+
+    seeds
+    |> Enum.map(&seed_to_location(&1, maps))
+    |> Enum.min()
+  end
+
+  def str_to_map(str) do
+    conversions = String.split(str, "\n", trim: true) |> Enum.drop(1) |> Enum.map(&AOC.nums/1)
+
+    fn x ->
+      Enum.find_value(conversions, x, fn [dest, src, len] ->
+        if x in src..(src + len - 1), do: x + (dest - src)
+      end)
+    end
+  end
+
+  def seed_to_location(seed, maps),
+    do: Enum.reduce(maps, seed, fn convert_fn, seed -> convert_fn.(seed) end)
+end
+
+test_input |> P1.solve()
+```
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    [seeds_str | maps_str] = input |> String.split("\n\n", trim: true)
+
+    seed_ranges =
+      seeds_str |> AOC.nums() |> Enum.chunk_every(2) |> Enum.map(fn [a, b] -> a..(a + b - 1) end)
+
+    # reverse the maps because we want to iterate from location -> seed
+    maps = maps_str |> Enum.map(&P2.str_to_map/1) |> Enum.reverse()
+
+    step = 100_000
+    found_max = 0..20_000_000//step |> min_location(seed_ranges, maps) || step
+    (found_max - step)..found_max |> min_location(seed_ranges, maps)
+  end
+
+  def min_location(location_range, seed_ranges, maps) do
+    location_range
+    |> Stream.map(&{&1, location_to_seed(&1, maps)})
+    |> Enum.find_value(fn {loc, seed} ->
+      if Enum.any?(seed_ranges, &(seed in &1)), do: loc
+    end)
+  end
+
+  def str_to_map(str) do
+    conversions = String.split(str, "\n", trim: true) |> Enum.drop(1) |> Enum.map(&AOC.nums/1)
+
+    fn x ->
+      Enum.find_value(conversions, x, fn [dest, src, len] ->
+        if x in dest..(dest + len - 1), do: x + (src - dest)
+      end)
+    end
+  end
+
+  def location_to_seed(location, maps),
+    do: Enum.reduce(maps, location, fn convert_fn, location -> convert_fn.(location) end)
+end
+
+test_input |> P2.solve()
+```
+
+<!-- livebook:{"offset":3973,"stamp":{"token":"XCP.fi7VgfEbTP74g65wNqgmCwGSFm5tohRY0ttyqp-XNMw8xBJryV-yiigzmFVmyf-PhFaIL6P6cMugCrJPRYivoe3_ucUuvMNgYXDlU0F4bqccG7Wd6t4","version":2}} -->
