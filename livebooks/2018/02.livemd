@@ -1,0 +1,145 @@
+# 2018 Day 02
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+
+  def nums(str) do
+    Regex.scan(~r/\d+/, str) |> Enum.map(fn [x] -> String.to_integer(x) end)
+  end
+end
+
+{:ok, day} = AOC.day(2, 2018)
+```
+
+## Part 1
+
+```elixir
+test_input = """
+abcdef
+bababc
+abbcde
+abcccd
+aabcdd
+abcdee
+ababab
+"""
+```
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    freqs =
+      input
+      |> String.split("\n", trim: true)
+      |> Enum.map(fn str ->
+        str |> String.graphemes() |> Enum.frequencies()
+      end)
+
+    num_that_contain(freqs, 3) * num_that_contain(freqs, 2)
+  end
+
+  def num_that_contain(freqs, target) do
+    Enum.count(freqs, fn f ->
+      Enum.any?(f, fn {_, v} -> v == target end)
+    end)
+  end
+end
+
+day.input |> P1.solve()
+```
+
+## Part 2
+
+```elixir
+test_input = """
+abcde
+fghij
+klmno
+pqrst
+fguij
+axcye
+wvxyz
+"""
+```
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    ids = input |> String.split("\n", trim: true)
+
+    {a, b, _} =
+      for id1 <- ids,
+          id2 <- ids,
+          id1 != id2 do
+        deletes =
+          String.myers_difference(id1, id2)
+          |> Enum.filter(fn {op, _chars} -> op == :del end)
+
+        {id1, id2,
+         case deletes do
+           [del: chars] -> if String.length(chars) == 1, do: 1, else: -1
+           _ -> -1
+         end}
+      end
+      |> Enum.find(fn {_id1, _id2, diff} -> diff == 1 end)
+
+    String.graphemes(a) |> List.delete_at(diff_char_index(a, b)) |> Enum.join()
+  end
+
+  def diff_char_index(a, b) when is_binary(a),
+    do: diff_char_index(String.graphemes(a), String.graphemes(b), 0)
+
+  def diff_char_index([a | rest1], [a | rest2], i), do: diff_char_index(rest1, rest2, i + 1)
+  def diff_char_index([_a | _], [_not_a | _], i), do: i
+end
+
+"ivjhcadokeltwgsfsmqwrbnuy" == day.input |> P2.solve()
+```
+
+<!-- livebook:{"offset":3203,"stamp":{"token":"XCP.Z1-Zw9Z7reQOYDFIwRHtBknNiAc7p0Wz7_-wSfSe9dqbtmN1LH0XX68njXTfT0Ov-nXLpT48TDnfgx75xgQRwXScZxfLKVKJ_Pq02-vHEhj3XTHKJJ8","version":2}} -->
