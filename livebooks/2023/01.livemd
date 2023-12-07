@@ -1,0 +1,165 @@
+# 2023 - Day 01
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:kino_vega_lite, "~> 0.1.11"},
+  {:vega_lite, "~> 0.1.8"}
+])
+
+alias VegaLite, as: Vl
+
+day = 1
+
+aoc_session = System.fetch_env!("LB_AOC_SESSION")
+input_url = "https://adventofcode.com/2023/day/#{day}/input"
+{:ok, %{body: input}} = Req.get(input_url, headers: [cookie: "session=#{aoc_session}"])
+```
+
+## Part 1
+
+```elixir
+test_input = """
+1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet
+"""
+```
+
+```elixir
+input
+|> String.split("\n", trim: true)
+|> Enum.reduce(0, fn str, acc ->
+  digits = str |> String.replace(~r/[^0-9]/, "") |> String.graphemes()
+  val = "#{List.first(digits)}#{List.last(digits)}" |> String.to_integer()
+  acc + val
+end)
+```
+
+## Part 2
+
+```elixir
+test_input = """
+two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen
+"""
+```
+
+```elixir
+defmodule P2 do
+  def last_digit(str) do
+    {rest, _} = String.split_at(str, -1)
+    last_char = str |> String.to_charlist() |> List.last()
+
+    cond do
+      String.ends_with?(str, "one") -> 1
+      String.ends_with?(str, "two") -> 2
+      String.ends_with?(str, "three") -> 3
+      String.ends_with?(str, "four") -> 4
+      String.ends_with?(str, "five") -> 5
+      String.ends_with?(str, "six") -> 6
+      String.ends_with?(str, "seven") -> 7
+      String.ends_with?(str, "eight") -> 8
+      String.ends_with?(str, "nine") -> 9
+      last_char in ?1..?9 -> last_char - ?0
+      :else -> last_digit(rest)
+    end
+  end
+
+  def first_digit(str) do
+    {_, rest} = String.split_at(str, 1)
+    first_char = str |> String.to_charlist() |> List.first()
+
+    cond do
+      String.starts_with?(str, "one") -> 1
+      String.starts_with?(str, "two") -> 2
+      String.starts_with?(str, "three") -> 3
+      String.starts_with?(str, "four") -> 4
+      String.starts_with?(str, "five") -> 5
+      String.starts_with?(str, "six") -> 6
+      String.starts_with?(str, "seven") -> 7
+      String.starts_with?(str, "eight") -> 8
+      String.starts_with?(str, "nine") -> 9
+      first_char in ?1..?9 -> first_char - ?0
+      :else -> first_digit(rest)
+    end
+  end
+end
+
+defmodule P3 do
+  @digits [
+    {"one", 1},
+    {"two", 2},
+    {"three", 3},
+    {"four", 4},
+    {"five", 5},
+    {"six", 6},
+    {"seven", 7},
+    {"eight", 8},
+    {"nine", 9}
+  ]
+
+  # def foo(str) do
+
+  #   Enum.find_value(@digits, fn {word, num} -> String.starts_with?(str, word) && num end)
+  # end
+
+  def foo("one" <> rest), do: 1
+  def foo()
+
+  def last_digit(str) do
+    {rest, _} = String.split_at(str, -1)
+    last_char = str |> String.to_charlist() |> List.last()
+
+    cond do
+      String.ends_with?(str, "one") -> 1
+      String.ends_with?(str, "two") -> 2
+      String.ends_with?(str, "three") -> 3
+      String.ends_with?(str, "four") -> 4
+      String.ends_with?(str, "five") -> 5
+      String.ends_with?(str, "six") -> 6
+      String.ends_with?(str, "seven") -> 7
+      String.ends_with?(str, "eight") -> 8
+      String.ends_with?(str, "nine") -> 9
+      last_char in ?1..?9 -> last_char - ?0
+      :else -> last_digit(rest)
+    end
+  end
+
+  def first_digit(str) do
+    {_, rest} = String.split_at(str, 1)
+    first_char = str |> String.to_charlist() |> List.first()
+
+    cond do
+      String.starts_with?(str, "one") -> 1
+      String.starts_with?(str, "two") -> 2
+      String.starts_with?(str, "three") -> 3
+      String.starts_with?(str, "four") -> 4
+      String.starts_with?(str, "five") -> 5
+      String.starts_with?(str, "six") -> 6
+      String.starts_with?(str, "seven") -> 7
+      String.starts_with?(str, "eight") -> 8
+      String.starts_with?(str, "nine") -> 9
+      first_char in ?1..?9 -> first_char - ?0
+      :else -> first_digit(rest)
+    end
+  end
+end
+```
+
+```elixir
+input
+|> String.split("\n", trim: true)
+|> Enum.reduce(0, fn str, acc ->
+  val = "#{P2.first_digit(str)}#{P2.last_digit(str)}" |> String.to_integer()
+  acc + val
+end)
+```
+
+<!-- livebook:{"offset":3889,"stamp":{"token":"XCP.VjY4KMszoMAbJx0mCkuSrqVFf5l73uWGC97aleRHrITys3AcL22R-oC5XItA3Tidn2E4htsFrDM3aFUVb26pI0SmKGN4tLbUy7dwVoBcmfQhQ2DbBAw","version":2}} -->
