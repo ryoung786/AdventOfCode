@@ -75,14 +75,27 @@ defmodule P1 do
     |> String.split("\n", trim: true)
     |> Enum.map(&AOC.nums/1)
     |> Enum.zip()
-    |> Enum.map(&num_winners/1)
+    |> Enum.map(&num_winners_closed_form/1)
     |> Enum.product()
   end
 
-  def num_winners({time, record}), do: Enum.count(0..time, &(time * &1 - &1 * &1 > record))
+  def num_winners_brute_force({time, record}),
+    do: Enum.count(0..time, &(time * &1 - &1 * &1 > record))
+
+  @doc """
+    iex> P1.num_winners_closed_form({7, 9})
+    4
+
+    iex> P1.num_winners_closed_form({30, 200})
+    9
+  """
+  def num_winners_closed_form({time, record}) do
+    lowest_winner = ceil(0.001 + (time - :math.sqrt(time * time - 4 * record)) / 2)
+    lowest_winner..(time - lowest_winner) |> Enum.count()
+  end
 end
 
-test_input |> P1.solve()
+day.input |> P1.solve()
 ```
 
 ## Part 2
@@ -91,21 +104,22 @@ test_input |> P1.solve()
 defmodule P2 do
   def solve(input) do
     input
-    |> time_record_pair()
-    |> P1.num_winners()
+    |> String.split("\n", trim: true)
+    |> Enum.map(&extract_number/1)
+    |> List.to_tuple()
+    |> P1.num_winners_closed_form()
   end
 
-  def time_record_pair(input) do
-    input
-    |> String.split("\n", trim: true)
-    |> Enum.map(fn str ->
-      str |> String.split(" ", trim: true) |> Enum.drop(1) |> Enum.join() |> String.to_integer()
-    end)
-    |> List.to_tuple()
+  @doc """
+    iex> P2.extract_number("Time:      7  15   30")
+    71530
+  """
+  def extract_number(str) do
+    str |> String.split(" ", trim: true) |> Enum.drop(1) |> Enum.join() |> String.to_integer()
   end
 end
 
-test_input |> P2.solve()
+day.input |> P2.solve()
 ```
 
-<!-- livebook:{"offset":2463,"stamp":{"token":"XCP.XErJJD4cu9Qs3zq5p5EXMXwHLqcQ7CVbaV6gT-HK5Y4oy19h1ijJed-DkSGTFVyn9G8YchdFLwmbqRVFq4bzyzkLj9lHP2G1BWO0YbLRjQn0jC16ov4","version":2}} -->
+<!-- livebook:{"offset":2857,"stamp":{"token":"XCP.-TOHXdunSPxdMXlWiSmyVavLa7ucxuaPwK1NNUALuuFAoo2pB-3BedQL6gHuJmfEAX3jWnnN2r4lBVcPUChEJQR6oNURLCZed6sLjQ8Ify6XhY425P4","version":2}} -->
