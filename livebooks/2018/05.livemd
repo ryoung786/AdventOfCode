@@ -1,0 +1,118 @@
+# 2018 Day 05
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+
+  def nums(str) do
+    Regex.scan(~r/\d+/, str) |> Enum.map(fn [x] -> String.to_integer(x) end)
+  end
+end
+
+{:ok, day} = AOC.day(5, 2018)
+```
+
+## Part 1
+
+```elixir
+test_input = "dabAcCaCBAcCcaDA"
+```
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    input
+    |> String.trim()
+    |> String.to_charlist()
+    |> react()
+    |> Enum.count()
+  end
+
+  def react(polymer) do
+    case react2(polymer, []) |> Enum.reverse() do
+      ^polymer -> polymer
+      next -> react(next)
+    end
+  end
+
+  def react2([], acc), do: acc
+  def react2([a], acc), do: [a | acc]
+
+  def react2([a, b | rest], acc) do
+    if abs(a - b) == 32, do: react2(rest, acc), else: react2([b | rest], [a | acc])
+  end
+end
+
+# test_input |> P1.solve()
+day.input |> P1.solve()
+```
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    polymer = input |> String.trim() |> String.to_charlist()
+
+    ?a..?z
+    |> Enum.map(fn type ->
+      polymer
+      # remove type
+      |> Enum.reject(fn p -> p in [type, type - 32] end)
+      |> P1.react()
+      |> Enum.count()
+    end)
+    |> Enum.min()
+  end
+end
+
+# test_input |> P2.solve()
+day.input |> P2.solve()
+```
+
+<!-- livebook:{"offset":2621,"stamp":{"token":"XCP.6-8b5avBsBKK5uC15ElL1vMKdP-Ip40E-qwEHS8R-BakKUFkB93_N3XEdWmSspg4d8g0DL8vAMwtLZnpsUUVZ8PfPjX5Y_Qp6MPKyp7MRsqtIxZlm-Y","version":2}} -->
