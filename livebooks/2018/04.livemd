@@ -1,0 +1,155 @@
+# 2018 Day 04
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+
+  def nums(str) do
+    Regex.scan(~r/\d+/, str) |> Enum.map(fn [x] -> String.to_integer(x) end)
+  end
+end
+
+{:ok, day} = AOC.day(4, 2018)
+```
+
+## Part 1
+
+```elixir
+test_input = """
+[1518-11-05 00:45] falls asleep
+[1518-11-01 00:05] falls asleep
+[1518-11-02 00:40] falls asleep
+[1518-11-01 00:25] wakes up
+[1518-11-01 00:30] falls asleep
+[1518-11-04 00:46] wakes up
+[1518-11-01 00:55] wakes up
+[1518-11-01 23:58] Guard #99 begins shift
+[1518-11-02 00:50] wakes up
+[1518-11-03 00:24] falls asleep
+[1518-11-03 00:29] wakes up
+[1518-11-04 00:02] Guard #99 begins shift
+[1518-11-04 00:36] falls asleep
+[1518-11-03 00:05] Guard #10 begins shift
+[1518-11-05 00:03] Guard #99 begins shift
+[1518-11-01 00:00] Guard #10 begins shift
+[1518-11-05 00:55] wakes up
+"""
+```
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    {sleepiest_guard_id, ranges} =
+      Enum.max_by(mins_asleep_by_guard(input), fn {_k, ranges} ->
+        ranges |> Enum.map(&Range.size/1) |> Enum.sum()
+      end)
+
+    {sleepiest_minute, _} =
+      0..59
+      |> Map.new(fn min -> {min, Enum.count(ranges, fn range -> min in range end)} end)
+      |> Enum.max_by(fn {_k, v} -> v end)
+
+    sleepiest_guard_id * sleepiest_minute
+  end
+
+  def mins_asleep_by_guard(input) do
+    log =
+      input
+      |> String.split("\n", trim: true)
+      |> Enum.map(fn str ->
+        [_, ts, action] = Regex.run(~r/^\[(.*)\] (.*)$/, str)
+        {NaiveDateTime.from_iso8601!(ts <> ":00"), action}
+      end)
+      |> Enum.sort_by(fn {ts, _} -> ts end, NaiveDateTime)
+
+    {mins_asleep_by_guard, _, _} =
+      Enum.reduce(log, {%{}, nil, nil}, fn
+        {ts, "falls asleep"}, {map, cur_guard, _} ->
+          {map, cur_guard, ts.minute}
+
+        {ts, "wakes up"}, {map, cur_guard, fell_asleep_at} ->
+          mins_asleep = fell_asleep_at..(ts.minute - 1)
+          map = Map.update(map, cur_guard, [mins_asleep], &[mins_asleep | &1])
+          {map, cur_guard, nil}
+
+        {_ts, guard}, {map, _, nil} ->
+          {map, guard |> AOC.nums() |> hd(), nil}
+      end)
+
+    mins_asleep_by_guard
+  end
+end
+
+test_input |> P1.solve()
+day.input |> P1.solve()
+```
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    {guard_id, {min, _amt}} =
+      P1.mins_asleep_by_guard(input)
+      |> Enum.map(fn {guard, ranges} ->
+        {guard,
+         0..59
+         |> Map.new(fn min -> {min, Enum.count(ranges, fn range -> min in range end)} end)
+         |> Enum.max_by(fn {_k, v} -> v end)}
+      end)
+      |> Enum.max_by(fn {_guard, {_min, amt}} -> amt end)
+
+    guard_id * min
+  end
+end
+
+test_input |> P2.solve()
+day.input |> P2.solve()
+```
+
+<!-- livebook:{"offset":4082,"stamp":{"token":"XCP.vWaEFNszTOtoivTtN9Mi4_fnWgANE2AKCB6Dscy1DPrW829pDKQRlyI1Q3F5yshclCx9xdmpKiROKORlkoxtZQ6Gu7A3oCxT5GMz-PkkILkVkG12_M0","version":2}} -->
