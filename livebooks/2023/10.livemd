@@ -1,0 +1,235 @@
+# 2023 Day 10
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+
+  def nums(str) do
+    Regex.scan(~r/\d+/, str) |> Enum.map(fn [x] -> String.to_integer(x) end)
+  end
+end
+
+{:ok, day} = AOC.day(10, 2023)
+```
+
+## Part 1
+
+```elixir
+test_input_1 = """
+-L|F7
+7S-7|
+L|7||
+-L-J|
+L|-JF
+"""
+
+test_input = """
+7-F7-
+.FJ|7
+SJLL7
+|F--J
+LJ.LJ
+"""
+```
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    grid = grid(input)
+    {start, "S"} = Enum.find(grid, fn {{_x, _y}, ch} -> ch == "S" end)
+
+    {steps, _path} = count_steps_in_loop(grid, start)
+    div(steps, 2)
+  end
+
+  def grid(input) do
+    grid =
+      input
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.graphemes/1)
+
+    for {r, y} <- Enum.with_index(grid),
+        {ch, x} <- Enum.with_index(r),
+        into: %{},
+        do: {{x, y}, ch}
+  end
+
+  def count_steps_in_loop(grid, start), do: loop(grid, start, start)
+
+  def loop(grid, start, xy, steps \\ 0, visited \\ MapSet.new()) do
+    visited = MapSet.put(visited, xy)
+
+    cond do
+      l(xy) not in visited && connected?(grid, xy, :left) ->
+        loop(grid, start, l(xy), steps + 1, visited)
+
+      r(xy) not in visited && connected?(grid, xy, :right) ->
+        loop(grid, start, r(xy), steps + 1, visited)
+
+      u(xy) not in visited && connected?(grid, xy, :up) ->
+        loop(grid, start, u(xy), steps + 1, visited)
+
+      d(xy) not in visited && connected?(grid, xy, :down) ->
+        loop(grid, start, d(xy), steps + 1, visited)
+
+      :done ->
+        {steps + 1, visited}
+    end
+  end
+
+  def connected?(grid, xy, :left), do: grid[l(xy)] in ~w/F L -/ && grid[xy] in ~w/J 7 - S/
+  def connected?(grid, xy, :right), do: grid[r(xy)] in ~w/7 J -/ && grid[xy] in ~w/F L - S/
+  def connected?(grid, xy, :up), do: grid[u(xy)] in ~w/F 7 |/ && grid[xy] in ~w/J L | S/
+  def connected?(grid, xy, :down), do: grid[d(xy)] in ~w/J L |/ && grid[xy] in ~w/F 7 | S/
+
+  def l({x, y}), do: {x - 1, y}
+  def r({x, y}), do: {x + 1, y}
+  def u({x, y}), do: {x, y - 1}
+  def d({x, y}), do: {x, y + 1}
+end
+
+# test_input_1 |> P1.solve()
+day.input |> P1.solve()
+```
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    grid = P1.grid(input)
+    {start, "S"} = Enum.find(grid, fn {{_x, _y}, ch} -> ch == "S" end)
+
+    {_steps, path} = P1.count_steps_in_loop(grid, start)
+    Enum.max_by(path, fn {x, _} -> x end)
+    {{xmin, _}, {xmax, _}} = {Enum.min(path), Enum.max(path)}
+
+    {{_, ymin}, {_, ymax}} =
+      {Enum.min_by(path, fn {_, y} -> y end), Enum.max_by(path, fn {_, y} -> y end)}
+
+    {xmin..xmax, ymin..ymax}
+
+    grid
+    |> Enum.count(fn {_, v} -> v == "." end)
+  end
+end
+
+# test_input |> P2.solve()
+# |> AOC.submit(day, :part_2)
+day.input |> P2.solve()
+```
+
+## Visualization
+
+```elixir
+defmodule Viz do
+  def solve(input, paper) do
+    grid = P1.grid(input)
+    {start, "S"} = Enum.find(grid, fn {{_x, _y}, ch} -> ch == "S" end)
+
+    count_steps_in_loop(grid, start, paper)
+  end
+
+  def count_steps_in_loop(grid, start, paper), do: loop(paper, grid, start, start)
+
+  def loop(paper, grid, start, xy, steps \\ 0, visited \\ MapSet.new()) do
+    visited = MapSet.put(visited, xy)
+
+    {x, y} = xy
+    Kino.VegaLite.push(paper, %{x: x, y: y, v: grid[xy]})
+    Process.sleep(1)
+
+    cond do
+      l(xy) not in visited && connected?(grid, xy, :left) ->
+        loop(paper, grid, start, l(xy), steps + 1, visited)
+
+      r(xy) not in visited && connected?(grid, xy, :right) ->
+        loop(paper, grid, start, r(xy), steps + 1, visited)
+
+      u(xy) not in visited && connected?(grid, xy, :up) ->
+        loop(paper, grid, start, u(xy), steps + 1, visited)
+
+      d(xy) not in visited && connected?(grid, xy, :down) ->
+        loop(paper, grid, start, d(xy), steps + 1, visited)
+
+      :done ->
+        {steps + 1, visited}
+    end
+  end
+
+  def connected?(grid, xy, :left), do: grid[l(xy)] in ~w/F L -/ && grid[xy] in ~w/J 7 - S/
+  def connected?(grid, xy, :right), do: grid[r(xy)] in ~w/7 J -/ && grid[xy] in ~w/F L - S/
+  def connected?(grid, xy, :up), do: grid[u(xy)] in ~w/F 7 |/ && grid[xy] in ~w/J L | S/
+  def connected?(grid, xy, :down), do: grid[d(xy)] in ~w/J L |/ && grid[xy] in ~w/F 7 | S/
+
+  def l({x, y}), do: {x - 1, y}
+  def r({x, y}), do: {x + 1, y}
+  def u({x, y}), do: {x, y - 1}
+  def d({x, y}), do: {x, y + 1}
+end
+```
+
+```elixir
+paper =
+  Vl.new(width: 600, height: 600)
+  |> Vl.config(view: [stroke: :transparent])
+  |> Vl.mark(:square, size: 15)
+  |> Vl.encode_field(:x, "x", axis: false)
+  |> Vl.encode_field(:y, "y", axis: false)
+  |> Vl.encode(:color,
+    value: "#039",
+    condition: [test: ~s/datum["v"] == "S"/, value: "#ff6347"]
+  )
+  |> Kino.VegaLite.new()
+  |> Kino.render()
+
+Viz.solve(day.input, paper)
+1
+```
+
+<!-- livebook:{"offset":6096,"stamp":{"token":"XCP.ygcY7mPULBvHs6Z2sXNI4WnAyw5RI03KZcob9sOlbkmbGVZJkU5rdEKDLg8tSVCJG-g1yBwnFq9GLfUC2DNNqYFVE8bO7j-ly9edZxaG4vE9c8WAogg","version":2}} -->
