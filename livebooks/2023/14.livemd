@@ -1,0 +1,146 @@
+# 2023 Day 14
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+
+  def nums(str) do
+    Regex.scan(~r/\d+/, str) |> Enum.map(fn [x] -> String.to_integer(x) end)
+  end
+end
+
+{:ok, day} = AOC.day(14, 2023)
+```
+
+## Part 1
+
+```elixir
+test_input = """
+O....#....
+O.OO#....#
+.....##...
+OO.#O....O
+.O.....O#.
+O.#..O.#.#
+..O..#O..O
+.......O..
+#....###..
+#OO..#....
+"""
+```
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> columns()
+    |> slide(:north)
+    |> Enum.sum()
+  end
+
+  def columns(rows) do
+    rows
+    |> Enum.map(&String.graphemes/1)
+    |> Enum.zip()
+    |> Enum.map(&(&1 |> Tuple.to_list() |> Enum.join() |> String.reverse()))
+  end
+
+  @doc """
+    iex> P1.slide(["##..O.O.OO"], :north)
+    [34]
+
+    iex> P1.slide(["O..O.#O.#."], :north)
+    [17]
+  """
+  def slide(grid, :north) do
+    grid
+    |> Enum.map(fn str ->
+      str = str <> "#"
+      blocks = Regex.scan(~r/#/, str, return: :index) |> Enum.map(fn [{i, _}] -> i end)
+
+      str
+      |> String.split("#")
+      |> Enum.zip(blocks)
+      |> Enum.map(fn {str, x} ->
+        {str |> String.to_charlist() |> Enum.frequencies() |> Map.get(?O, 0), x}
+      end)
+      |> Enum.reject(fn {o, _} -> o == 0 end)
+      |> Enum.map(fn {n, i} -> Enum.sum(i..(i - n + 1)) end)
+      |> Enum.sum()
+
+      # |> dbg()
+    end)
+  end
+
+  def load(grid, :north) do
+    grid
+    |> Enum.filter(fn {_, v} -> v == "O" end)
+    |> Enum.map(fn {{_x, y}, "O"} -> y end)
+    |> Enum.sum()
+  end
+end
+
+# test_input |> P1.solve()
+day.input |> P1.solve() |> AOC.submit(day)
+```
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    input
+  end
+end
+
+test_input |> P2.solve()
+# day.input |> P2.solve()
+```
+
+<!-- livebook:{"offset":3130,"stamp":{"token":"XCP.-E9szfYcmZdsDy1q5P5F7xwBjGlCb-b0nlL7cTRII7JWU7zu1XlkUXseMeuOnh1igG0tuyJyt8hqSMQ3L90qkEPV8DA3yjNi8aP37TSYRK2a-12fINk","version":2}} -->

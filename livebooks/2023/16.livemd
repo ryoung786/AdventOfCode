@@ -1,0 +1,161 @@
+# 2023 Day 16
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.5"},
+  {:vega_lite, "~> 0.1.8"},
+  {:kino_vega_lite, "~> 0.1.11"}
+])
+
+alias VegaLite, as: Vl
+
+defmodule AOC do
+  @aoc_session System.fetch_env!("LB_AOC_SESSION")
+
+  def day(day, year) when day in 1..25 do
+    headers = [cookie: "session=#{@aoc_session}"]
+    req = Req.new(base_url: "https://adventofcode.com/#{year}/day/#{day}", headers: headers)
+    input = Req.get!(req, url: "/input").body
+
+    if input =~ "Please don't repeatedly request this endpoint before it unlocks",
+      do: {:error, "Day #{day} hasn't been unlocked yet"},
+      else: {:ok, %{req: req, input: input}}
+  end
+
+  def submit(answer, %{req: req}, part \\ :part_1) when part in [:part_1, :part_2] do
+    part = if part == :part_2, do: 2, else: 1
+
+    if !part_already_completed?(part, req) do
+      body = Req.post!(req, url: "/answer", form: [level: part, answer: answer]).body
+
+      cond do
+        body =~ "That's the right answer" -> {:correct, answer}
+        body =~ "your answer is too low" -> {:too_low, answer}
+        body =~ "your answer is too high" -> {:too_high, answer}
+        :else -> {:incorrect, answer}
+      end
+    else
+      {:already_completed_part, answer}
+    end
+  end
+
+  defp part_already_completed?(part, req) do
+    body = Req.get!(req).body
+
+    cond do
+      body =~ "Both parts of this puzzle are complete!" -> true
+      body =~ "The first half of this puzzle is complete!" -> part == 1
+      :else -> false
+    end
+  end
+
+  def nums(str) do
+    Regex.scan(~r/\d+/, str) |> Enum.map(fn [x] -> String.to_integer(x) end)
+  end
+end
+
+{:ok, day} = AOC.day(16, 2023)
+```
+
+## Part 1
+
+```elixir
+test_input = ~S"""
+.|...\....
+|.-.\.....
+.....|-...
+........|.
+..........
+.........\
+..../.\\..
+.-.-/..|..
+.|....-|.\
+..//.|....
+"""
+```
+
+```elixir
+defmodule P1 do
+  def solve(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> to_grid()
+    |> energize({0, 0}, :right)
+    |> Enum.count(fn {_xy, cell} -> cell[:left] || cell[:right] || cell[:up] || cell[:down] end)
+  end
+
+  def to_grid(rows) do
+    for {row, y} <- Enum.with_index(rows),
+        {v, x} <- Enum.with_index(String.graphemes(row)),
+        into: %{},
+        do: {{x, y}, %{value: v}}
+  end
+
+  def energize(grid, xy, dir) do
+    if grid[xy] == nil || grid[xy][dir] do
+      grid
+    else}
+      grid = %{grid | xy => Map.put(grid[xy], dir, true)}
+
+      case new_dir(dir, grid[xy].value) do
+        [dir1, dir2] -> grid |> energize(move(xy, dir1), dir1) |> energize(move(xy, dir2), dir2)
+        dir -> energize(grid, move(xy, dir), dir)
+      end
+    end
+  end
+
+  def new_dir(dir, "."), do: dir
+  def new_dir(dir, "-") when dir in [:left, :right], do: dir
+  def new_dir(dir, "-") when dir in [:up, :down], do: [:left, :right]
+  def new_dir(dir, "|") when dir in [:up, :down], do: dir
+  def new_dir(dir, "|") when dir in [:left, :right], do: [:up, :down]
+  def new_dir(:right, "/"), do: :up
+  def new_dir(:right, "\\"), do: :down
+  def new_dir(:left, "/"), do: :down
+  def new_dir(:left, "\\"), do: :up
+  def new_dir(:up, "/"), do: :right
+  def new_dir(:up, "\\"), do: :left
+  def new_dir(:down, "/"), do: :left
+  def new_dir(:down, "\\"), do: :right
+
+  def move({x, y}, :left), do: {x - 1, y}
+  def move({x, y}, :right), do: {x + 1, y}
+  def move({x, y}, :up), do: {x, y - 1}
+  def move({x, y}, :down), do: {x, y + 1}
+end
+
+test_input |> P1.solve()
+# day.input |> P1.solve()
+```
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def solve(input) do
+    rows = String.split(input, "\n", trim: true)
+    grid = P1.to_grid(rows)
+
+    w = rows |> hd() |> String.length()
+    h = Enum.count(rows)
+
+    top = 0..(w - 1) |> Enum.map(&energize(grid, {&1, 0}, :down))
+    bot = 0..(w - 1) |> Enum.map(&energize(grid, {&1, h - 1}, :up))
+    left = 0..(h - 1) |> Enum.map(&energize(grid, {0, &1}, :right))
+    right = 0..(h - 1) |> Enum.map(&energize(grid, {w - 1, &1}, :left))
+
+    [top, bot, left, right] |> List.flatten() |> Enum.max()
+  end
+
+  def energize(grid, xy, dir) do
+    grid
+    |> P1.energize(xy, dir)
+    |> Enum.count(fn {_xy, cell} -> cell[:left] || cell[:right] || cell[:up] || cell[:down] end)
+  end
+end
+
+test_input |> P2.solve()
+# day.input |> P2.solve() |> AOC.submit(day, :part_2)
+```
+
+<!-- livebook:{"offset":4218,"stamp":{"token":"XCP.OrSpaoTqfKkuO0tRzN8mCVIxP82n8rGOzVChvv_OtawryvkQhKDc4f2QRC6Lh7fEKVONFEjgSee66qfzGqei5UyelnTgdYVtP5QXBbw_-te2quO3psA","version":2}} -->
