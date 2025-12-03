@@ -64,4 +64,4 @@ if config_env() == :prod do
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end
 
-config :aoc, session_keys: %{2025 => System.get_env("SESSION_KEY_2025")}
+config :aoc, session_key: System.get_env("AOC_SESSION_KEY")

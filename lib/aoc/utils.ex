@@ -21,4 +21,18 @@ defmodule Aoc.Utils do
     [_, year, day] = Regex.run(~r/Year(\d+).Day(\d+)/, module)
     {String.to_integer(year), String.to_integer(day)}
   end
+
+  def ensure_input(year, day) do
+    filename = (day |> Integer.to_string() |> String.pad_leading(2, "0")) <> ".input"
+
+    File.write!(
+      Path.join([:code.priv_dir(:aoc), "#{year}", filename]),
+      Req.get!(req(), url: "/#{year}/day/#{day}/input").body
+    )
+  end
+
+  def req() do
+    headers = [cookie: "session=#{Application.get_env(:aoc, :session_key)}"]
+    Req.new(base_url: "https://adventofcode.com", headers: headers)
+  end
 end
