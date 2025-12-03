@@ -8,14 +8,9 @@ defmodule Aoc.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Telemetry supervisor
       AocWeb.Telemetry,
-      # Start the PubSub system
       {Phoenix.PubSub, name: Aoc.PubSub},
-      # Start the Endpoint (http/https)
       AocWeb.Endpoint
-      # Start a worker by calling: Aoc.Worker.start_link(arg)
-      # {Aoc.Worker, arg}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -20,8 +20,8 @@ defmodule AocWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :aoc,
-    gzip: false,
-    only: ~w(assets fonts images favicon.ico robots.txt)
+    gzip: not code_reloading?,
+    only: AocWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
