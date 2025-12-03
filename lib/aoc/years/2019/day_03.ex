@@ -46,13 +46,13 @@ defmodule Aoc.Year2019.Day03 do
   def all_intersections(w1, w2) do
     for a <- w1, b <- w2, intersect?(a, b) do
       case a.xs do
-        x..x ->
-          y..y = b.ys
+        x..x//1 ->
+          y..y//1 = b.ys
           {x, y}
 
         _ ->
-          x.._ = b.xs
-          y.._ = a.ys
+          x.._//1 = b.xs
+          y.._//1 = a.ys
           {x, y}
       end
     end

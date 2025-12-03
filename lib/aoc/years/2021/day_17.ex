@@ -21,9 +21,9 @@ defmodule Aoc.Year2021.Day17 do
   end
 
   def in_target?(xtarget, ytarget, {x, y}), do: x in xtarget and y in ytarget
-  def beyond_target?(_..xmax, ymin.._, {x, y}), do: x > xmax or y < ymin
+  def beyond_target?(_..xmax//1, ymin.._//1, {x, y}), do: x > xmax or y < ymin
 
-  def find_valid_slopes({_xmin..xmax = xtarget, ymin.._ymax = ytarget}) do
+  def find_valid_slopes({_xmin..xmax//1 = xtarget, ymin.._ymax//1 = ytarget}) do
     for dx <- 1..xmax, dy <- ymin..100 do
       points = plot_course(dx, dy, xtarget, ytarget)
       {dx, dy, points}
