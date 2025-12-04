@@ -1,35 +1,33 @@
 defmodule Aoc.Year2025.Day04 do
   use Aoc.DayBase
-  alias Aoc.Utils.Matrix
+  alias Aoc.Utils.Grid
 
   def part_one(input) do
-    m = Matrix.from_string(input, & &1)
-    Matrix.count(m, fn x, y, v -> v == "@" && adjacent_paper_count(m, x, y) < 4 end)
+    g = Grid.new(input)
+    Enum.count(g, fn {xy, v} -> v == "@" && adjacent_paper_count(g, xy) < 4 end)
   end
 
   def part_two(input) do
-    m = Matrix.from_string(input, & &1)
-    num_at_start = Matrix.count(m, fn _, _, v -> v == "@" end)
+    g = Grid.new(input)
 
-    final_m =
-      Enum.reduce_while(0..99, m, fn _step, m ->
-        new = remove_paper(m)
-        if new == m, do: {:halt, new}, else: {:cont, new}
+    remove_paper =
+      &Map.new(&1, fn {xy, v} ->
+        if v == "@" && adjacent_paper_count(&1, xy) < 4, do: {xy, "."}, else: {xy, v}
       end)
 
-    num_at_start - Matrix.count(final_m, fn _, _, v -> v == "@" end)
+    final_grid =
+      Enum.reduce_while(0..99, g, fn _step, g ->
+        new = remove_paper.(g)
+        if new == g, do: {:halt, new}, else: {:cont, new}
+      end)
+
+    paper_count(g) - Enum.count(final_grid, fn {_xy, v} -> v == "@" end)
   end
 
-  def remove_paper(m) do
-    m
-    |> Matrix.with_xy()
-    |> Matrix.map(fn {{x, y}, v} ->
-      if v == "@" && adjacent_paper_count(m, x, y) < 4, do: ".", else: v
-    end)
-  end
+  def paper_count(map), do: map |> Map.values() |> Enum.count(&(&1 == "@"))
 
-  def adjacent_paper_count(m, x, y) do
-    Matrix.all_neighbors(m, x, y) |> Map.values() |> Enum.count(&(&1 == "@"))
+  def adjacent_paper_count(g, xy) do
+    Grid.neighbors(g, xy) |> paper_count()
   end
 
   def example() do
