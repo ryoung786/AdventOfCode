@@ -1,7 +1,7 @@
 defmodule Aoc.Utils.Grid do
   alias Aoc.Utils.Input
 
-  def new(str) do
+  def new(str, mapper \\ & &1) do
     str
     |> Input.to_str_list()
     |> Enum.with_index()
@@ -9,7 +9,7 @@ defmodule Aoc.Utils.Grid do
       line
       |> String.split("", trim: true)
       |> Enum.with_index()
-      |> Enum.reduce(m, fn {ch, x}, m -> Map.put(m, {x, y}, ch) end)
+      |> Enum.reduce(m, fn {ch, x}, m -> Map.put(m, {x, y}, mapper.(ch)) end)
     end)
   end
 
@@ -22,14 +22,23 @@ defmodule Aoc.Utils.Grid do
     |> Map.new(fn xy -> {xy, g[xy]} end)
   end
 
+  def cardinal_neighbors(g, {x, y}) do
+    {w, h} = {width(g) - 1, height(g) - 1}
+
+    [{0, -1}, {0, 1}, {-1, 0}, {1, 0}]
+    |> Enum.map(fn {dx, dy} -> {x + dx, y + dy} end)
+    |> Enum.reject(fn {x, y} -> x < 0 || x > w || y < 0 || y > h end)
+    |> Map.new(fn xy -> {xy, g[xy]} end)
+  end
+
   def width(grid) do
-    {_, y} = Map.keys(grid) |> Enum.max_by(fn {_x, y} -> y end)
-    y + 1
+    {x, _} = Map.keys(grid) |> Enum.max_by(fn {x, _y} -> x end)
+    x + 1
   end
 
   def height(grid) do
-    {x, _} = Map.keys(grid) |> Enum.max_by(fn {x, _y} -> x end)
-    x + 1
+    {_, y} = Map.keys(grid) |> Enum.max_by(fn {_x, y} -> y end)
+    y + 1
   end
 
   def print(grid) do
