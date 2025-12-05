@@ -1,18 +1,19 @@
 defmodule Aoc.Year2021.Day09 do
   use Aoc.DayBase
-  alias Aoc.Utils.Matrix
+  alias Aoc.Utils.Grid
 
   def part_one(input) do
-    input
-    |> Matrix.from_string()
-    |> find_lowest_points()
-    |> Enum.map(&risk_level/1)
-    |> Enum.sum()
+    g = input |> Grid.new(&String.to_integer/1)
+
+    Enum.filter(g, fn {xy, val} ->
+      val < Grid.cardinal_neighbors(g, xy) |> Map.values() |> Enum.min()
+    end)
+    |> Enum.sum_by(fn {_xy, val} -> val + 1 end)
   end
 
   def part_two(input) do
     input
-    |> Matrix.from_string()
+    |> Grid.new(&String.to_integer/1)
     |> find_basins()
     |> Enum.sort()
     |> Enum.reverse()
@@ -20,52 +21,44 @@ defmodule Aoc.Year2021.Day09 do
     |> Enum.product()
   end
 
-  def risk_level(val), do: val + 1
-
-  def find_lowest_points(%Matrix{w: w, h: h} = m) do
-    for x <- 0..(w - 1), y <- 0..(h - 1), reduce: [] do
-      acc ->
-        val = Matrix.at(m, x, y)
-        neighbors = Matrix.neighbors(m, x, y) |> Map.values()
-        if val < Enum.min(neighbors), do: [val | acc], else: acc
-    end
-  end
-
-  def find_basins(%Matrix{w: w, h: h} = m) do
-    for x <- 0..(w - 1), y <- 0..(h - 1), reduce: {[], []} do
-      {basins, placed} ->
-        if {x, y} in placed do
+  def find_basins(g) do
+    {basins, _placed} =
+      Enum.reduce(g, {[], []}, fn {xy, _val}, {basins, placed} ->
+        if xy in placed do
           {basins, placed}
         else
-          basin = find_basin(m, {x, y})
-          {[basin | basins], add_to_placed(basin, placed)}
+          basin = find_basin(g, xy)
+          {[basin | basins], basin ++ placed}
         end
-    end
-    |> elem(0)
-    |> Enum.map(&Enum.count/1)
+      end)
+
+    Enum.map(basins, &Enum.count/1)
   end
 
-  def add_to_placed(basin, placed),
-    do: Enum.reduce(basin, placed, fn xy, points -> [xy | points] end)
+  def find_basin(g, xy), do: find_basin(g, [xy], [], [])
+  def find_basin(_g, [] = _queue, basin, _seen), do: basin
 
-  def find_basin(%Matrix{} = m, {x, y} = xy) when is_integer(x) and is_integer(y) do
-    find_basin(m, [xy], [], [])
-  end
-
-  def find_basin(%Matrix{}, [] = _queue, basin, _seen), do: basin
-
-  def find_basin(%Matrix{} = m, [{x, y} = xy | queue], basin, seen) do
-    val = Matrix.at(m, xy)
-
-    if val == 9 or is_nil(val) do
-      find_basin(m, queue, basin, [xy | seen])
+  def find_basin(g, [{x, y} = xy | queue], basin, seen) do
+    if g[xy] in [9, nil] do
+      find_basin(g, queue, basin, [xy | seen])
     else
       queue =
         [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}]
         |> Enum.reject(fn pos -> pos in queue || pos in seen end)
         |> Enum.concat(queue)
 
-      find_basin(m, queue, [xy | basin], [xy | seen])
+      find_basin(g, queue, [xy | basin], [xy | seen])
     end
+  end
+
+  def example() do
+    """
+    2199943210
+    3987894921
+    9856789892
+    8767896789
+    9899965678
+    """
+    |> String.trim()
   end
 end
