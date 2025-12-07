@@ -24,7 +24,7 @@ defmodule AocWeb do
         formats: [:html, :json],
         layouts: [html: AocWeb.Layouts]
 
-      import AocWeb.Gettext
+      use Gettext, backend: AocWeb.Gettext
       import Plug.Conn
 
       unquote(verified_routes())
@@ -81,7 +81,7 @@ defmodule AocWeb do
     quote do
       # Core UI components and translation
       import AocWeb.CoreComponents
-      import AocWeb.Gettext
+      use Gettext, backend: AocWeb.Gettext
       import Phoenix.HTML
 
       # Shortcut for generating JS commands
