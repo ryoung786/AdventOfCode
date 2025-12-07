@@ -1,13 +1,13 @@
 defmodule Aoc.Utils.Grid do
   alias Aoc.Utils.Input
 
-  def new(str, mapper \\ & &1) do
+  def new(str, mapper \\ & &1, separator \\ "") do
     str
     |> Input.to_str_list()
     |> Enum.with_index()
     |> Enum.reduce(%{}, fn {line, y}, m ->
       line
-      |> String.split("", trim: true)
+      |> String.split(separator, trim: true)
       |> Enum.with_index()
       |> Enum.reduce(m, fn {ch, x}, m -> Map.put(m, {x, y}, mapper.(ch)) end)
     end)
@@ -40,6 +40,11 @@ defmodule Aoc.Utils.Grid do
     {_, y} = Map.keys(grid) |> Enum.max_by(fn {_x, y} -> y end)
     y + 1
   end
+
+  def row(grid, i), do: for(x <- 0..(width(grid) - 1), do: grid[{x, i}])
+  def rows(grid), do: for(y <- 0..(height(grid) - 1), do: row(grid, y))
+  def col(grid, i), do: for(y <- 0..(height(grid) - 1), do: grid[{i, y}])
+  def cols(grid), do: for(x <- 0..(width(grid) - 1), do: col(grid, x))
 
   def print(grid) do
     rows =
